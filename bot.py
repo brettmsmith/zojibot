@@ -3,13 +3,14 @@ import sys
 import socket
 import string
 import re
+#import file
 
+f = open('botlogin.dat')
 global HOST, PORT, PASS, NICK, CHANNEL
 HOST = "irc.twitch.tv"
 PORT = 6667
-PASS = 
-NICK =
-#TODO: Put PASS and NICK in a separate file and load them in.
+PASS = f.readline()
+NICK = f.readline()
 #TODO: Make a master file that takes name a runs a new instance of the bot
 
 try:
