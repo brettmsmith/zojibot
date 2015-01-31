@@ -1,27 +1,31 @@
 #TODO: Add error catching
 from flask import Flask
 from flask import request
-import subprocess
+from flask import redirect
+from subprocess import Popen, PIPE
 import tempfile
 import re
+#import str
 
 fs = open('appauth.dat')
 global userToken, CLIENTID, CLIENTSECRET
-CLIENTID = fs.readline()
-CLIENTSECRET = fs.readline()
+CLIENTID = str.rstrip(fs.readline())
+CLIENTSECRET = str.rstrip(fs.readline())
+fs.close()
 userToken = None
 app = Flask(__name__)
-fs.close()
+
 
 def parseCurlForUsername(f):#strip the username out of the json response
-    match = re.search("\"user_name\":\s\"(\w+)\",", f.read())
+    match = re.search("\"user_name\":\s\"(\w+)\",", f)
     if match != None:
         return match[14:-1]
     else:
         return None
 
 def parseCurlForAuthToken(f):#get client token from json response
-    match = re.search("\"access_token\":\s\"(.*?)\",") #might have to change to specificify alphanumeric
+    print 'Searching through: ' + f
+    match = re.search("\"access_token\":\s\"(.*?)\",", f) #might have to change to specificify alphanumeric
     if match != None:
         return match[19:-2]
     else:
@@ -29,34 +33,46 @@ def parseCurlForAuthToken(f):#get client token from json response
 
 @app.route('/')
 def index():
-    return 'Index page'
+    return 'Index page<br><a href="/login">Login here</a>'
 
 @app.route('/login/') #use redirect() to redirect user TODO: might want to move the userCode part to a /callback/ page
-def login(userCode = None):#TODO: add some try/catches around file stuff and curl stuff
+def login():#TODO: add some try/catches around file stuff and curl stuff
     global userToken, CLIENTID, CLIENTSECRET
+    userCode = request.args.get('code')
+    print 'userCode: '+str(userCode)
     if userCode != None: #got redirect from twitch
-        stdOut = tempfile.TemporaryFile()
-        curlCall = "curl -H https://api.twitch.tv/kraken/oauth2/token client_id="+CLIENTID+"&client_secret="+CLIENTSECRET+"&grant_type=authorization_code&redirect_uri=http://localhost:5000/login&code="+userCode
-        subprocess.call(curlCall, stdout = stdOut)
-        userToken = parseCurlForAuthToken(stdOut)
-        stdOut.close()
+        print 'In /login with userCode'
+        #stdOut = tempfile.TemporaryFile()
+        curlCall = "curl -X POST https://api.twitch.tv/kraken/oauth2/token?client_id="+CLIENTID+"&client_secret="+CLIENTSECRET+"&grant_type=authorization_code&redirect_uri=http://localhost:5000/login&code="+str(userCode)
+        print 'curlCall: '+curlCall
+        #subprocess.call(curlCall, stdout = stdOut)
+        process = Popen(curlCall, shell=True, stdout=PIPE, stderr=PIPE)
+        out, err = process.communicate()
+        print 'Parsing output: '+out+' : '+err
+        userToken = parseCurlForAuthToken(out)
+        #stdOut.close()
         if userToken != None:
             #TODO: get username from twitch and redirect to /user/username
-            stdOut = tempfile.TemporaryFile()
-            curlCall = "curl -H 'Accept: application/vnd.twitchtv.v2+json' -H 'Authorization: OAuth "+userToken+"' -X GET https://api.twitch.tv/kraken"
-            subprocess.call(curlCall, stdout=stdOut)
+            print 'Got user token back it\'s '+userToken
+            #stdOut = tempfile.TemporaryFile()
+            curlCall = "curl -X POST 'Accept: application/vnd.twitchtv.v2+json' -H 'Authorization: OAuth "+userToken+"' -X GET https://api.twitch.tv/kraken"
+            #subprocess.call(curlCall, stdout=stdOut)
+            proc = Popen(curlCall, shell=True, stdout=PIPE, stderr=PIPE)
+            stdOut, err = proc.communicate()
             username = parseCurlForUsername(stdOut)
+            print 'Got username back, it\'s '+username
             if username != None:
-                redirect(url_for('/user/'+username))
+                return redirect(url_for('/user/'+username))
             else:#error
-                pass
+                print 'Error: username not parsed'
         else:#error getting token
-            pass
+            print 'Error: Token not received'
     else: #need to inform&redirect user to twitch or check for cookie&send to user
-        pass
         #redirect
-        redirectURL = 'https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&client_id='+CLIENTID+'&redirect_uri=+http://localhost:5000/login'#&scope=[space separated list of scopes]
-        redirect(redirectURL)
+
+        redirectURL = r'https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&client_id='+CLIENTID+r'&redirect_uri=http://localhost:5000/login'#&scope=[space separated list of scopes]
+        print "Printing for posterity:\nClientid: "+CLIENTID+"\nURL: "+redirectURL
+        return redirect(redirectURL)
 
 @app.route('/user/<username>/')
 def profile(username=None):
