@@ -7,10 +7,8 @@ import re
 global HOST, PORT, PASS, NICK, CHANNEL
 HOST = "irc.twitch.tv"
 PORT = 6667
-#PASS = "oauth:umqiiddrmfs28d9le7fmqp88eubaxm" #CallMeZoji's oauth
-#NICK = "callmezoji"
-PASS = "oauth:r7v2i8ctowjhcf345i1exrv8h1m2jo" #ZojiBot's oauth
-NICK = "zojibot"
+PASS = 
+NICK =
 #TODO: Put PASS and NICK in a separate file and load them in.
 #TODO: Make a master file that takes name a runs a new instance of the bot
 
