@@ -55,3 +55,4 @@ target/
 
 #datafiles
 *.dat
+*.cfg
