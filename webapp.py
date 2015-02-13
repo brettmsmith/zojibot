@@ -1,7 +1,8 @@
 #TODO: Add error catching
 from flask import Flask, request, redirect, url_for
+from flask.ext.sqlalchemy import SQLAlchemy
 from subprocess import Popen, PIPE
-import re, requests
+import re, requests, os
 
 fs = open('appauth.dat')
 global userToken, CLIENTID, CLIENTSECRET
@@ -10,7 +11,35 @@ CLIENTSECRET = str.rstrip(fs.readline())
 fs.close()
 userToken = None
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ["DATABASE_URL"]#'postgresql://localhost/test.db'
+db = SQLAlchemy(app)
 
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key = True)
+    username = db.Column(db.String(80), unique = True)
+    #commandSet = db.Column(db.String(5000), unique = False)
+    commandSet = db.relationship('Command', backref='commands')
+
+
+    def __init__(self, username):
+        self.username = username
+        #self.commandSet = 'None'
+
+    def __repr__(self):
+        return '<User %r>' % self.username
+
+class Command(db.Model):
+    id = db.Column(db.Integer, primary_key = True)
+    username = db.Column(db.String(80), db.ForeignKey('user.username'))
+    comm = db.Column(db.String(1000), unique=False)
+
+    def __init__(self, username, comm):
+        self.username = username
+        self.comm = comm
+
+    def __repr__(self):
+        return 'Username: %s Command %s' % self.username, self.comm
 
 def parseCurlForUsername(f):#strip the username out of the json response
     match = re.search("\"user_name\":\s*\"(\w+)\"", f)
@@ -28,6 +57,41 @@ def parseCurlForAuthToken(f):#get client token from json response
     else:
         print 'Returning auth token as None'
         return None
+
+def getUserCommands(user, s):#TODO: Need to find a way to parse, someone could type anything as a command
+    #Basic delimiter will just be '|'
+    if s != 'None':
+        pass
+    else:#No commands
+        return None
+
+def setUserCommands(user, s):
+    pass
+
+@app.route('/dbtest/')
+def dbtest():
+    return '<form action="/dbtest/results">User:<br><input type="text" name="username"><br>Command:<br><input type="text" name="command"><br><input type="submit" value="submit"></form>'
+
+@app.route('/dbtest/reset/')
+def reset():
+    db.drop_all()
+    return 'Success'
+
+@app.route('/dbtest/results/')
+def dbresults():
+    user = request.args.get('username')
+    command = request.args.get('command')
+    print 'User: %s' %user
+    client = User(user)
+    com = Command(user, command)
+    #db.session.add(client)
+    db.session.add(com)
+    db.session.commit()
+    try:
+        query = Command.query.filter_by(username=user).filter_by(comm=command).first_or_404()
+    except Exception as e:
+        print 'Error: %d-%s' % (e.errno, e.strerror)
+    return 'Hello %s. Your command was: %s' % (query.username, query.comm)
 
 @app.route('/')
 def index():
@@ -64,17 +128,29 @@ def login():#TODO: add some try/catches around file stuff and curl stuff
         print "Printing for posterity:\nClientid: "+CLIENTID+"\nURL: "+redirectURL
         return redirect(redirectURL)
 
-@app.route('/user/<username>/')
+@app.route('/user/<username>/')#TODO: add command editing and saving, then restart bot
 def profile(username=None):
     if username != None:
+        #TODO: Add in database stuff
         return 'Success, '+username
     else:#error
         return 'Please <a href="/login">Login</a>'
     #check for token
     #check for config file for user? if none, make one
 
+@app.route('/user/<username>/edit/')
+def editCommands(username=None):
+    if username != None:
+        #TODO: Sessioning, check for token
+        query = User.query.filter_by(username=username)
+        if query != None:
+            commands = getUserCommands(query.username, query.commandSet)
+        else:#user not found
+            pass
+
 if __name__ == '__main__':
     app.debug = True
+    db.create_all()
     app.run()
 
 '''

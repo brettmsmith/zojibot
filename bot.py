@@ -22,11 +22,29 @@ global readbuffer
 readbuffer = ""
 
 global username
-username = ':\w+!'
+username = ':(\w+)!'
 global said
-said = "PRIVMSG\s#.+:.+"
+said = "PRIVMSG\s#.+:(.+)"
 
 global s
+
+global commands
+commands = {}
+
+def loadUserCommands(f):#get user's config file and load their commands checking chat
+    global commands
+    pass
+
+def checkSpam(line, name):#TODO: t/o links, more
+    pass
+
+def checkSubs():
+    pass
+
+def checkCommands(line):#TODO: mod only commands and command cooldowns
+    global commands
+
+    pass
 
 def connect():
     global s, readbuffer
@@ -63,12 +81,12 @@ def run():
     while True:
         try:
             readbuffer = readbuffer + s.recv(4096)
-        except socket.timeout as e:
+        except socket.timeout as e: #TODO: Put growing timeout (don't want to spam if twitch is down)
             connect()
         except Exception as e:
             print "-Error: " + str(e)
             raise
-        temp = str.split(readbuffer, "\n")
+        temp = readbuffer.split("\n")
         last = temp.pop()
         #print last
         #print temp
@@ -79,16 +97,18 @@ def run():
             reg = re.search(username, line)
             #print 'original match ' + line
             if reg != None:
-                name = reg.group()
+                name = reg.group(1)
                 #print 'matching ' + line
-                regchat = re.search(said, line)#said.match(line)
+                regchat = re.search(said, line)
                 if regchat != None:
-                    chat = regchat.group()
-                    chatLine = str.split(chat, ':')
-                    print name[1:-1] + ': ' + chatLine[1]
-                else:#should be random housekeeping messages, people arriving and leaving channel, etc.
-                    #print name[1:-1] +' talked'
+                    chatLine = regchat.group(1)
+                    commands = checkCommands(chatLine)
+                    spam = checkSpam(chatLine, name)
+                    print name + ': ' + chatLine
+                else:#TODO: Catch sub messages, have whatever message in response
+                    #subResponse = checkSubs(line)
                     pass
 
+loadUserCommands(CHANNEL)
 connect()
 run()
