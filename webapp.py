@@ -32,14 +32,16 @@ class User(db.Model):
 class Command(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String(80), db.ForeignKey('user.username'))
-    comm = db.Column(db.String(1000), unique=False)
+    comm = db.Column(db.String(1000), unique=True)
+    response = db.Column(db.String(1000), unique=False)
 
-    def __init__(self, username, comm):
+    def __init__(self, username, comm, response):
         self.username = username
         self.comm = comm
+        self.response = response
 
     def __repr__(self):
-        return 'Username: %s Command %s' % self.username, self.comm
+        return 'Username: %s Command %s Response: %s' % (self.username, self.comm, self.response)
 
 def parseCurlForUsername(f):#strip the username out of the json response
     match = re.search("\"user_name\":\s*\"(\w+)\"", f)
@@ -116,6 +118,13 @@ def login():#TODO: add some try/catches around file stuff and curl stuff
             username = parseCurlForUsername(rq.text)
             print 'Got username back, it\'s '+username
             if username != None:
+                try:
+                    name = User.query.get(username=username)
+                except:
+                    print 'Added new user ' + username + ' to database'
+                    newUser = User(username)
+                    db.session.add(newUser)
+                    db.session.commit()
                 return redirect(url_for('profile',username=username))
             else:#error
                 print 'Error: username not parsed'
@@ -132,25 +141,41 @@ def login():#TODO: add some try/catches around file stuff and curl stuff
 def profile(username=None):
     if username != None:
         #TODO: Add in database stuff
-        return 'Success, '+username
+        return 'Hello, ' + username + '<br> <a href="/user/' + username + '/edit">Edit</a><br> Add new command: <br><form action="/user/'+username+'/add"> Command: <input type="text" name="command"><br>Response:<input type="text" name="response"><br><input type="submit" value="Submit"></form>'
     else:#error
         return 'Please <a href="/login">Login</a>'
     #check for token
     #check for config file for user? if none, make one
-
+@app.route('/user/<username>/add')
+def addCommand(username=None):
+    if username != None:
+        command = request.args.get('command')
+        response = request.args.get('response')
+        newCommand = Command(username, command, response)
+        db.session.add(newCommand)
+        db.session.commit()
+        return redirect('/user/'+username+'/')
+    else:
+        pass
 @app.route('/user/<username>/edit/')
 def editCommands(username=None):
     if username != None:
         #TODO: Sessioning, check for token
         query = User.query.filter_by(username=username)
         if query != None:
-            commands = getUserCommands(query.username, query.commandSet)
+            commands = Command.query.filter_by(username=username)
+            result = 'Commands<br>'
+            if commands != None:
+                for c in commands:
+                    result = result + repr(c) + '<br>'
+            return result
         else:#user not found
-            pass
+            pass #should be redirect to login screen
 
 if __name__ == '__main__':
     app.debug = True
     db.create_all()
+    #db.drop_all()
     app.run()
 
 '''
