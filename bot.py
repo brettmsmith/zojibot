@@ -1,8 +1,6 @@
 #! /usr/bin/python
-import sys
-import socket
-import string
-import re
+import sys, socket, string, re
+from flask.ext.sqlalchemy import SQLAlchemy
 
 f = open('botlogin.dat')
 global HOST, PORT, PASS, NICK, CHANNEL
@@ -11,6 +9,11 @@ PORT = 6667
 PASS = f.readline()
 NICK = f.readline()
 f.close()
+
+app = Flask(__name__) #TODO: get some real sqlalchemy in here
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ["DATABASE_URL"]#'postgresql://localhost/test.db'
+db = SQLAlchemy(app)
+
 #TODO: Make a master file that takes name a runs a new instance of the bot
 
 try:

@@ -1,5 +1,5 @@
 #TODO: Add error catching
-from flask import Flask, request, redirect, url_for
+from flask import Flask, request, redirect, url_for, render_template
 from flask.ext.sqlalchemy import SQLAlchemy
 from subprocess import Popen, PIPE
 import re, requests, os
@@ -16,8 +16,8 @@ db = SQLAlchemy(app)
 
 
 class User(db.Model):
-    id = db.Column(db.Integer, primary_key = True)
-    username = db.Column(db.String(80), unique = True)
+    id = db.Column(db.Integer, unique = True)
+    username = db.Column(db.String(80), primary_key = True)
     #commandSet = db.Column(db.String(5000), unique = False)
     commandSet = db.relationship('Command', backref='commands')
 
@@ -41,7 +41,7 @@ class Command(db.Model):
         self.response = response
 
     def __repr__(self):
-        return 'Username: %s Command %s Response: %s' % (self.username, self.comm, self.response)
+        return 'Username: %s Command: %s Response: %s' % (self.username, self.comm, self.response)
 
 def parseCurlForUsername(f):#strip the username out of the json response
     match = re.search("\"user_name\":\s*\"(\w+)\"", f)
@@ -119,9 +119,17 @@ def login():#TODO: add some try/catches around file stuff and curl stuff
             print 'Got username back, it\'s '+username
             if username != None:
                 try:
-                    name = User.query.get(username=username)
-                except:
-                    print 'Added new user ' + username + ' to database'
+                    name = User.query.get(username)
+                    print 'Found name ' + str(name)+ ' in database'
+                    if name == None:
+                        print 'Name was none'
+                        print 'Adding new user ' + username + ' to database'
+                        newUser = User(username)
+                        db.session.add(newUser)
+                        db.session.commit()
+                except Exception as e:
+                    print 'Exception: '+str(e)
+                    print 'Adding new user ' + username + ' to database'
                     newUser = User(username)
                     db.session.add(newUser)
                     db.session.commit()
