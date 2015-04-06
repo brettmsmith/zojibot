@@ -73,6 +73,8 @@ def setUserCommands(user, s):
 
 @app.route('/')
 def index():
+    if 'username' in session:
+        return redirect('/user/'+session['username'])
     return 'Index page<br><a href="/login">Login here</a>'
 
 @app.route('/login/') #use redirect() to redirect user TODO: might want to move the userCode part to a /callback/ page
@@ -117,7 +119,6 @@ def login():#TODO: add some try/catches around file stuff and curl stuff
             print 'Error: Token not received'
     else: #need to inform&redirect user to twitch or check for cookie&send to user
         #redirect
-
         redirectURL = r'https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&client_id='+CLIENTID+r'&redirect_uri=http://localhost:5000/login'#&scope=[space separated list of scopes]
         print "Printing for posterity:\nClientid: "+CLIENTID+"\nURL: "+redirectURL
         return redirect(redirectURL)
@@ -128,13 +129,13 @@ def profile(username=None):
         #TODO: Add in database stuff
         if 'username' in session:
             if session['username'] == username:
-                return 'Hello, ' + username + '<br> <a href="/user/' + username + '/edit">Edit</a><br> Add new command: <br><form action="/user/'+username+'/add"> Command: <input type="text" name="command"><br>Response:<input type="text" name="response"><br><input type="submit" value="Submit"></form>'
+                return 'Hello, ' + username + '<br> <a href="/user/' + username + '/edit">Edit</a><br> Add new command: <br><form action="/user/'+username+'/add"> Command: <input type="text" name="command"><br>Response:<input type="text" name="response"><br><input type="submit" value="Submit"></form><br><a href="/logout/">Logout</a>'
             else:#username doesn't match session
-                return "<p>Username doesn't match</p><br><a href=\"localhost:5000\">Index</a>"
+                return '<p>Username doesn\'t match</p><br><a href="/">Index</a>'
         else: #no username in session
-            return "<p>No token</p><br><a href=\"localhost:5000\">Index</a>"
+            return '<p>No token</p><br><a href="/">Index</a>'
     else:#error
-        return 'Please <a href="/login">Login</a>'
+        return 'Please <a href="/login">Login</a><br>'
     #check for token
 @app.route('/user/<username>/add')
 def addCommand(username=None):
@@ -148,9 +149,9 @@ def addCommand(username=None):
                 db.session.commit()
                 return redirect('/user/'+username+'/')
             else:#username doesn't match session
-                return "<p>Username doesn't match</p><br><a href=\"localhost:5000\">Index</a>"
+                return '<p>Username doesn\'t match</p><br><a href="/">Index</a>'
         else: #no username in session
-            return "<p>No token</p><br><a href=\"localhost:5000\">Index</a>"
+            return '<p>No token</p><br><a href="/">Index</a>'
     else:
         pass
 @app.route('/user/<username>/edit/')
@@ -170,9 +171,13 @@ def editCommands(username=None):
                 else:#user not found
                     pass #should be redirect to login screen
             else:#username doesn't match session
-                return "<p>Username doesn't match</p><br><a href=\"localhost:5000\">Index</a>"
+                return '<p>Username doesn\'t match</p><br><a href="/">Index</a>'
         else: #no username in session
-            return "<p>No token</p><br><a href=\"localhost:5000\">Index</a>"
+            return '<p>No token</p><br><a href="/">Index</a>'
+@app.route('/logout/')
+def logout():
+    session.pop('username', None)
+    return redirect('/')
 
 if __name__ == '__main__':
     app.debug = True
