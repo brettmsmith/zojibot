@@ -1,5 +1,5 @@
 #TODO: Add error catching
-from flask import Flask, request, redirect, url_for, render_template
+from flask import Flask, request, redirect, url_for, render_template, session
 from flask.ext.sqlalchemy import SQLAlchemy
 from subprocess import Popen, PIPE
 import re, requests, os
@@ -8,6 +8,7 @@ fs = open('appauth.dat')
 global userToken, CLIENTID, CLIENTSECRET
 CLIENTID = str.rstrip(fs.readline())
 CLIENTSECRET = str.rstrip(fs.readline())
+SECRET_KEY = str.rstrip(fs.readline())
 fs.close()
 userToken = None
 app = Flask(__name__)
@@ -41,7 +42,7 @@ class Command(db.Model):
         self.response = response
 
     def __repr__(self):
-        return 'Username: %s Command: %s Response: %s' % (self.username, self.comm, self.response)
+        return 'Username: %s Command: %s Response: %s Command ID: %s' % (self.username, self.comm, self.response, self.id)
 
 def parseCurlForUsername(f):#strip the username out of the json response
     match = re.search("\"user_name\":\s*\"(\w+)\"", f)
@@ -69,31 +70,6 @@ def getUserCommands(user, s):#TODO: Need to find a way to parse, someone could t
 
 def setUserCommands(user, s):
     pass
-
-@app.route('/dbtest/')
-def dbtest():
-    return '<form action="/dbtest/results">User:<br><input type="text" name="username"><br>Command:<br><input type="text" name="command"><br><input type="submit" value="submit"></form>'
-
-@app.route('/dbtest/reset/')
-def reset():
-    db.drop_all()
-    return 'Success'
-
-@app.route('/dbtest/results/')
-def dbresults():
-    user = request.args.get('username')
-    command = request.args.get('command')
-    print 'User: %s' %user
-    client = User(user)
-    com = Command(user, command)
-    #db.session.add(client)
-    db.session.add(com)
-    db.session.commit()
-    try:
-        query = Command.query.filter_by(username=user).filter_by(comm=command).first_or_404()
-    except Exception as e:
-        print 'Error: %d-%s' % (e.errno, e.strerror)
-    return 'Hello %s. Your command was: %s' % (query.username, query.comm)
 
 @app.route('/')
 def index():
@@ -133,6 +109,7 @@ def login():#TODO: add some try/catches around file stuff and curl stuff
                     newUser = User(username)
                     db.session.add(newUser)
                     db.session.commit()
+                session['username'] = username
                 return redirect(url_for('profile',username=username))
             else:#error
                 print 'Error: username not parsed'
@@ -149,41 +126,59 @@ def login():#TODO: add some try/catches around file stuff and curl stuff
 def profile(username=None):
     if username != None:
         #TODO: Add in database stuff
-        return 'Hello, ' + username + '<br> <a href="/user/' + username + '/edit">Edit</a><br> Add new command: <br><form action="/user/'+username+'/add"> Command: <input type="text" name="command"><br>Response:<input type="text" name="response"><br><input type="submit" value="Submit"></form>'
+        if 'username' in session:
+            if session['username'] == username:
+                return 'Hello, ' + username + '<br> <a href="/user/' + username + '/edit">Edit</a><br> Add new command: <br><form action="/user/'+username+'/add"> Command: <input type="text" name="command"><br>Response:<input type="text" name="response"><br><input type="submit" value="Submit"></form>'
+            else:#username doesn't match session
+                return "<p>Username doesn't match</p><br><a href=\"localhost:5000\">Index</a>"
+        else: #no username in session
+            return "<p>No token</p><br><a href=\"localhost:5000\">Index</a>"
     else:#error
         return 'Please <a href="/login">Login</a>'
     #check for token
-    #check for config file for user? if none, make one
 @app.route('/user/<username>/add')
 def addCommand(username=None):
     if username != None:
-        command = request.args.get('command')
-        response = request.args.get('response')
-        newCommand = Command(username, command, response)
-        db.session.add(newCommand)
-        db.session.commit()
-        return redirect('/user/'+username+'/')
+        if 'username' in session:
+            if session['username'] == username:
+                command = request.args.get('command')
+                response = request.args.get('response')
+                newCommand = Command(username, command, response)
+                db.session.add(newCommand)
+                db.session.commit()
+                return redirect('/user/'+username+'/')
+            else:#username doesn't match session
+                return "<p>Username doesn't match</p><br><a href=\"localhost:5000\">Index</a>"
+        else: #no username in session
+            return "<p>No token</p><br><a href=\"localhost:5000\">Index</a>"
     else:
         pass
 @app.route('/user/<username>/edit/')
 def editCommands(username=None):
     if username != None:
         #TODO: Sessioning, check for token
-        query = User.query.filter_by(username=username)
-        if query != None:
-            commands = Command.query.filter_by(username=username)
-            result = 'Commands<br>'
-            if commands != None:
-                for c in commands:
-                    result = result + repr(c) + '<br>'
-            return result
-        else:#user not found
-            pass #should be redirect to login screen
+        if 'username' in session:
+            if session['username'] == username:
+                query = User.query.filter_by(username=username)
+                if query != None:
+                    commands = Command.query.filter_by(username=username)
+                    result = 'Commands<br>'
+                    if commands != None:
+                        for c in commands:
+                            result = result + repr(c) + '<br>'
+                    return result
+                else:#user not found
+                    pass #should be redirect to login screen
+            else:#username doesn't match session
+                return "<p>Username doesn't match</p><br><a href=\"localhost:5000\">Index</a>"
+        else: #no username in session
+            return "<p>No token</p><br><a href=\"localhost:5000\">Index</a>"
 
 if __name__ == '__main__':
     app.debug = True
     db.create_all()
     #db.drop_all()
+    app.secret_key = SECRET_KEY
     app.run()
 
 '''
