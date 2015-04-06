@@ -2,10 +2,10 @@
 from flask import Flask, request, redirect, url_for, render_template, session
 from flask.ext.sqlalchemy import SQLAlchemy
 from subprocess import Popen, PIPE
-import re, requests, os
+import re, requests, os, subprocess
 
 fs = open('appauth.dat')
-global userToken, CLIENTID, CLIENTSECRET
+global userToken, CLIENTID, CLIENTSECRET, botProcess
 CLIENTID = str.rstrip(fs.readline())
 CLIENTSECRET = str.rstrip(fs.readline())
 SECRET_KEY = str.rstrip(fs.readline())
@@ -14,6 +14,7 @@ userToken = None
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ["DATABASE_URL"]#'postgresql://localhost/test.db'
 db = SQLAlchemy(app)
+botProcess = None
 
 
 class User(db.Model):
@@ -123,13 +124,44 @@ def login():#TODO: add some try/catches around file stuff and curl stuff
         print "Printing for posterity:\nClientid: "+CLIENTID+"\nURL: "+redirectURL
         return redirect(redirectURL)
 
+@app.route('/user/<username>/start/')
+def startbot(username=None):
+    global botProcess
+
+    if 'username' in session:
+        if session['username'] == username:
+            if botProcess == None:
+                print 'STARTING BOT'
+                botProcess = subprocess.Popen('./bot.py '+username, shell=True)
+    return redirect('/user/'+username)
+
+@app.route('/user/<username>/stop/')
+def stopbot(username=None):
+    global botProcess
+    
+    if 'username' in session:
+        if session['username'] == username:
+            if botProcess != None:
+                print 'STOPPING BOT'
+                botProcess.terminate()
+                botProcess = None
+    return redirect('/user/'+username)
+
 @app.route('/user/<username>/')#TODO: add command editing and saving, then restart bot
 def profile(username=None):
+    global botProcess
     if username != None:
         #TODO: Add in database stuff
         if 'username' in session:
             if session['username'] == username:
-                return 'Hello, ' + username + '<br> <a href="/user/' + username + '/edit">Edit</a><br> Add new command: <br><form action="/user/'+username+'/add"> Command: <input type="text" name="command"><br>Response:<input type="text" name="response"><br><input type="submit" value="Submit"></form><br><a href="/logout/">Logout</a>'
+                #check request to start bot
+                result = 'Hello, ' + username + '<br> <a href="/user/' + username + '/edit">Edit</a><br> Add new command: <br><form action="/user/'+username+'/add"> Command: <input type="text" name="command"><br>Response:<input type="text" name="response"><br><input type="submit" value="Submit"></form>'
+                if botProcess == None: #TODO: Do a checkup on bot status (maybe later w/ javascript?)
+                    result += 'Bot status: Stopped<br><form action="start/"> <button type="submit" name="bot" value="start">Start bot</button></form>'
+                else:
+                    result += 'Bot status: Started<br><form action="stop/"> <button type="submit" name="bot" value="stop">Stop bot</button></form>'
+                return result+'<br><a href="/logout/">Logout</a>'
+
             else:#username doesn't match session
                 return '<p>Username doesn\'t match</p><br><a href="/">Index</a>'
         else: #no username in session
@@ -174,6 +206,7 @@ def editCommands(username=None):
                 return '<p>Username doesn\'t match</p><br><a href="/">Index</a>'
         else: #no username in session
             return '<p>No token</p><br><a href="/">Index</a>'
+
 @app.route('/logout/')
 def logout():
     session.pop('username', None)
