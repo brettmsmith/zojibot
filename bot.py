@@ -40,14 +40,14 @@ commands = {}
 def loadUserCommands(f):#get user's config file and load their commands checking chat
     global commands
     rawCommands = Command.query.filter_by(username=f)
-    commandRE = 'Command:\s(\w+)'
-    responseRE = 'Response:\s(\w+)'
+    commandRE = 'Command:\s(.+)\sResponse:'
+    responseRE = 'Response:\s(.+)\sCommand\sID'
     for line in rawCommands:
-        #print 'Grabbing in: '+repr(line)
+        print 'Grabbing in: '+repr(line)
         cre = re.search(commandRE, repr(line)).group(1)
         rre = re.search(responseRE, repr(line)).group(1)
-        #print 'Command: '+cre
-        #print 'Response: '+rre
+        print 'Command: '+cre
+        print 'Response: '+rre
         commands[cre] = rre
         #print 'Got '+commands[re.search(commandRE, repr(line))]+' for '+re.search(commandRE, repr(line))
 
@@ -58,17 +58,29 @@ def checkSpam(line, name):#TODO: t/o links, more
 def checkSubs():
     pass
 
-def checkCommands(line):#TODO: mod only commands and command cooldowns
+def checkCommands(readline):#TODO: mod only commands and command cooldowns
     global commands
 
-    pass
+    #2 ways to do it, either check whole msg, or have the command be the only thing allowed
+    #going to do only thing allowed, much much faster
+    print 'Checking commands: '+readline
+    #print 'Checking command data structure: '+commands[readline]
+    print type(readline) is str
+    if readline in commands:
+        print ''+readline+' is in commands'
+
+        sendMessage(commands[readline])
+    else:
+        print 'Checking commands2: '+readline
+        print 'this '+readline+' wasn\'t in commands'
+
 
 def connect():
     global s, readbuffer, timecount
     global HOST, PORT, PASS, NICK, CHANNEL
 
     s = socket.socket()
-    s.settimeout(5.0*timecount)
+    s.settimeout(10.0*timecount)
     try:
         s.connect((HOST, PORT))
         s.send("PASS %s\r\n" % PASS)
@@ -130,7 +142,7 @@ def run():
                 regchat = re.search(said, line)
                 if regchat != None:
                     chatLine = regchat.group(1)
-                    commands = checkCommands(chatLine)
+                    checkCommands(chatLine.rstrip())
                     spam = checkSpam(chatLine, name)
                     print name + ': ' + chatLine
                 else:#TODO: Catch sub messages, have whatever message in response
