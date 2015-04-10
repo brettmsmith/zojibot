@@ -138,7 +138,7 @@ def startbot(username=None):
 @app.route('/user/<username>/stop/')
 def stopbot(username=None):
     global botProcess
-    
+
     if 'username' in session:
         if session['username'] == username:
             if botProcess != None:
@@ -217,7 +217,7 @@ if __name__ == '__main__':
     db.create_all()
     #db.drop_all()
     app.secret_key = SECRET_KEY
-    app.run()
+    app.run(host='0.0.0.0')
 
 '''
     ok so go to index, there's a bit of info about the bot and a login button
