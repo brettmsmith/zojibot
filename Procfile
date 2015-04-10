@@ -1,1 +1,2 @@
-web: bundle exec rails server -p $PORT
+web: gunicorn hello:app --log-file -
+worker: python worker.py
