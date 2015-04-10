@@ -3,7 +3,6 @@ Flask-SQLAlchemy==2.0
 gunicorn==19.3.0
 itsdangerous==0.24
 Jinja2==2.7.3
-mod-wsgi==4.4.10
 psycopg2==2.6
 py2app==0.7.3
 pyOpenSSL==0.13.1
