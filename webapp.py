@@ -120,7 +120,7 @@ def login():#TODO: add some try/catches around file stuff and curl stuff
             print 'Error: Token not received'
     else: #need to inform&redirect user to twitch or check for cookie&send to user
         #redirect
-        redirectURL = r'https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&client_id='+CLIENTID+r'&redirect_uri=http://localhost:5000/login'#&scope=[space separated list of scopes]
+        redirectURL = r'https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&client_id='+CLIENTID+r'&redirect_uri=http://zojibot.herokuapp.com/login'#&scope=[space separated list of scopes]
         print "Printing for posterity:\nClientid: "+CLIENTID+"\nURL: "+redirectURL
         return redirect(redirectURL)
 
