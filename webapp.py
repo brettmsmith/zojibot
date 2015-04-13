@@ -4,12 +4,12 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from subprocess import Popen, PIPE
 import re, requests, os, subprocess
 
-fs = open('appauth.dat')
+#fs = open('appauth.dat')
 global userToken, CLIENTID, CLIENTSECRET, botProcess
-CLIENTID = str.rstrip(fs.readline())
-CLIENTSECRET = str.rstrip(fs.readline())
-SECRET_KEY = str.rstrip(fs.readline())
-fs.close()
+CLIENTID = os.getenv("CLIENTID")#str.rstrip(fs.readline())
+CLIENTSECRET = os.getenv("CLIENTSECRET")#str.rstrip(fs.readline())
+SECRET_KEY = os.getenv("SECRET_KEY")#str.rstrip(fs.readline())
+#fs.close()
 userToken = None
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ["DATABASE_URL"]#'postgresql://localhost/test.db'
@@ -217,7 +217,7 @@ if __name__ == '__main__':
     db.create_all()
     #db.drop_all()
     app.secret_key = SECRET_KEY
-    app.run(host='0.0.0.0')
+    app.run()
 
 '''
     ok so go to index, there's a bit of info about the bot and a login button
