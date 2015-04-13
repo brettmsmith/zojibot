@@ -85,7 +85,7 @@ def login():#TODO: add some try/catches around file stuff and curl stuff
     print 'userCode: '+str(userCode)
     if userCode != None: #got redirect from twitch
         print 'In /login with userCode'
-        urlParams = {'client_id':CLIENTID, 'client_secret':CLIENTSECRET, 'grant_type':'authorization_code', 'redirect_uri':'http://localhost:5000/login', 'code':str(userCode)}
+        urlParams = {'client_id':CLIENTID, 'client_secret':CLIENTSECRET, 'grant_type':'authorization_code', 'redirect_uri':'http://zojibot.herokuapp.com/login', 'code':str(userCode)}
         r = requests.post('https://api.twitch.tv/kraken/oauth2/token', params = urlParams)
         print 'Parsing response: '+r.text
         userToken = parseCurlForAuthToken(r.text)
