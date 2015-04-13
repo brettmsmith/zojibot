@@ -213,7 +213,7 @@ def logout():
     return redirect('/')
 
 if __name__ == '__main__':
-    app.debug = True
+    #app.debug = True
     db.create_all()
     #db.drop_all()
     app.secret_key = SECRET_KEY
