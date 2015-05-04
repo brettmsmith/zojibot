@@ -113,6 +113,7 @@ def login():#TODO: add some try/catches around file stuff and curl stuff
                     db.session.add(newUser)
                     db.session.commit()
                 session['username'] = username
+                print 'Redirecting to profile'
                 return redirect(url_for('profile',username=username))
             else:#error
                 print 'Error: username not parsed'
