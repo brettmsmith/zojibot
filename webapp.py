@@ -9,6 +9,7 @@ global userToken, CLIENTID, CLIENTSECRET, botProcess
 CLIENTID = os.getenv("CLIENTID")#str.rstrip(fs.readline())
 CLIENTSECRET = os.getenv("CLIENTSECRET")#str.rstrip(fs.readline())
 SECRET_KEY = os.environ["SECRET_KEY"]#str.rstrip(fs.readline())
+print 'Secret key:'+SECRET_KEY
 #fs.close()
 userToken = None
 app = Flask(__name__)
