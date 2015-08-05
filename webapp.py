@@ -79,6 +79,10 @@ def index():
         return redirect('/user/'+session['username'])
     return 'Index page<br><a href="/login">Login here</a>'
 
+@app.route('/error/')
+def error():
+    return 'Got an error'
+
 @app.route('/login/') #use redirect() to redirect user TODO: might want to move the userCode part to a /callback/ page
 def login():#TODO: add some try/catches around file stuff and curl stuff
     global userToken, CLIENTID, CLIENTSECRET
@@ -119,7 +123,7 @@ def login():#TODO: add some try/catches around file stuff and curl stuff
                     session['username'] = username
                 except Exception as e:
                     print "Couldn't set username in session"
-                    raise
+                    return redirect('/error/')
                 print 'Redirecting to profile'
                 return redirect(url_for('profile',username=username))
             else:#error
