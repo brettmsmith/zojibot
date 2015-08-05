@@ -117,12 +117,12 @@ def login():#TODO: add some try/catches around file stuff and curl stuff
                     newUser = User(username)
                     db.session.add(newUser)
                     db.session.commit()
-                print 'Sessioning username...'
+                print 'Sessioning username: '+username
 
                 try:
                     session['username'] = username
                 except Exception as e:
-                    print "Couldn't set username in session"
+                    print 'Error: '+e
                     return redirect('/error/')
                 print 'Redirecting to profile'
                 return redirect(url_for('profile',username=username))
