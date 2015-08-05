@@ -232,7 +232,7 @@ def run():
     #db.drop_all()
     print 'Setting secret key to ' + SECRET_KEY
     app.secret_key = SECRET_KEY
-    app.run()
+    #app.run()
 
 run()
 
