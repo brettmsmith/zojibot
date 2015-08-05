@@ -15,6 +15,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ["DATABASE_URL"]#'postgresql://localhost/test.db'
 db = SQLAlchemy(app)
 botProcess = None
+redirect_uri = 'http://zojibot.herokuapp.com/login'
 
 
 class User(db.Model):
@@ -85,7 +86,7 @@ def login():#TODO: add some try/catches around file stuff and curl stuff
     print 'userCode: '+str(userCode)
     if userCode != None: #got redirect from twitch
         print 'In /login with userCode'
-        urlParams = {'client_id':CLIENTID, 'client_secret':CLIENTSECRET, 'grant_type':'authorization_code', 'redirect_uri':'http://zojibot.herokuapp.com/login', 'code':str(userCode)}
+        urlParams = {'client_id':CLIENTID, 'client_secret':CLIENTSECRET, 'grant_type':'authorization_code', 'redirect_uri':redirect_uri, 'code':str(userCode)}
         r = requests.post('https://api.twitch.tv/kraken/oauth2/token', params = urlParams)
         print 'Parsing response: '+r.text
         userToken = parseCurlForAuthToken(r.text)
@@ -113,11 +114,12 @@ def login():#TODO: add some try/catches around file stuff and curl stuff
                     db.session.add(newUser)
                     db.session.commit()
                 print 'Sessioning username...'
-                print 'session: '+session['username']
+
                 try:
                     session['username'] = username
                 except Exception as e:
-                    raise 
+                    print "Couldn't set username in session"
+                    raise
                 print 'Redirecting to profile'
                 return redirect(url_for('profile',username=username))
             else:#error
@@ -126,7 +128,7 @@ def login():#TODO: add some try/catches around file stuff and curl stuff
             print 'Error: Token not received'
     else: #need to inform&redirect user to twitch or check for cookie&send to user
         #redirect
-        redirectURL = r'https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&client_id='+CLIENTID+r'&redirect_uri=http://zojibot.herokuapp.com/login'#&scope=[space separated list of scopes]
+        redirectURL = r'https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&client_id='+CLIENTID+r'&redirect_uri='+redirect_uri#&scope=[space separated list of scopes]
         print "Printing for posterity:\nClientid: "+CLIENTID+"\nURL: "+redirectURL
         return redirect(redirectURL)
 
@@ -219,7 +221,7 @@ def logout():
     return redirect('/')
 
 if __name__ == '__main__':
-    app.debug = True
+    #app.debug = True
     db.create_all()
     #db.drop_all()
     app.secret_key = SECRET_KEY
