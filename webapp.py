@@ -113,7 +113,11 @@ def login():#TODO: add some try/catches around file stuff and curl stuff
                     db.session.add(newUser)
                     db.session.commit()
                 print 'Sessioning username...'
-                session['username'] = username
+                print 'session: '+session['username']
+                try:
+                    session['username'] = username
+                except Exception as e:
+                    raise 
                 print 'Redirecting to profile'
                 return redirect(url_for('profile',username=username))
             else:#error
