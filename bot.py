@@ -4,19 +4,17 @@ from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 from webapp import Command
 
-f = open('botlogin.dat')
 global HOST, PORT, PASS, NICK, CHANNEL
 HOST = "irc.twitch.tv"
 PORT = 6667
-PASS = f.readline()
-NICK = f.readline()
-f.close()
+PASS = os.environ['bot_pass']
+NICK = 'zojibot'
 
 app = Flask(__name__) #TODO: get some real sqlalchemy in here
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ["DATABASE_URL"]#'postgresql://localhost/test.db'
 db = SQLAlchemy(app)
 
-#TODO: Make a master file that takes name a runs a new instance of the bot
+#TODO: Make a master file that takes name and runs a new instance of the bot
 
 try:
     CHANNEL = sys.argv[1]
