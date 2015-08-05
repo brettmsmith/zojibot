@@ -225,13 +225,16 @@ def logout():
     session.pop('username', None)
     return redirect('/')
 
-if __name__ == '__main__':
+#if __name__ == '__main__':
+def run():
     #app.debug = True
     db.create_all()
     #db.drop_all()
     print 'Setting secret key to ' + SECRET_KEY
     app.secret_key = SECRET_KEY
     app.run()
+
+run()
 
 '''
     ok so go to index, there's a bit of info about the bot and a login button
