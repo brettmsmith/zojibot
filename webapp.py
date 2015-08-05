@@ -122,7 +122,7 @@ def login():#TODO: add some try/catches around file stuff and curl stuff
                 try:
                     session['username'] = username
                 except Exception as e:
-                    print 'Error: '+e
+                    print 'Error: '+str(e)
                     return redirect('/error/')
                 print 'Redirecting to profile'
                 return redirect(url_for('profile',username=username))
