@@ -8,7 +8,7 @@ import re, requests, os, subprocess
 global userToken, CLIENTID, CLIENTSECRET, botProcess
 CLIENTID = os.getenv("CLIENTID")#str.rstrip(fs.readline())
 CLIENTSECRET = os.getenv("CLIENTSECRET")#str.rstrip(fs.readline())
-SECRET_KEY = os.getenv("SECRET_KEY")#str.rstrip(fs.readline())
+SECRET_KEY = os.environ["SECRET_KEY"]#str.rstrip(fs.readline())
 #fs.close()
 userToken = None
 app = Flask(__name__)
@@ -228,6 +228,7 @@ if __name__ == '__main__':
     #app.debug = True
     db.create_all()
     #db.drop_all()
+    print 'Setting secret key to ' + SECRET_KEY
     app.secret_key = SECRET_KEY
     app.run()
 
