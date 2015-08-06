@@ -2,7 +2,7 @@
 from flask import Flask, request, redirect, url_for, render_template, session
 from flask.ext.sqlalchemy import SQLAlchemy
 from subprocess import Popen, PIPE
-import re, requests, os, subprocess
+import re, requests, os, subprocess, signal
 
 global userToken, CLIENTID, CLIENTSECRET, botProcess
 CLIENTID = os.getenv("CLIENTID")
@@ -154,7 +154,8 @@ def stopbot(username=None):
         if session['username'] == username:
             if botProcess != None:
                 print 'STOPPING BOT'
-                botProcess.kill()
+                #botProcess.kill()
+                os.killpg(botProcess.pid, signal.SIGTERM)
                 botProcess = None
     return redirect('/user/'+username)
 
