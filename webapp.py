@@ -169,7 +169,7 @@ def profile():
     if 'username' in session:
         username = session['username']
         #check request to start bot
-        result = 'Hello, ' + username + '<br> <a href="/user/' + username + '/edit">Edit</a><br> Add new command: <br><form action="/user/'+username+'/add"> Command: <input type="text" name="command"><br>Response:<input type="text" name="response"><br><input type="submit" value="Submit"></form>'
+        result = 'Hello, ' + username + '<br> <a href="/edit/">Edit</a><br> Add new command: <br><form action="/user/'+username+'/add"> Command: <input type="text" name="command"><br>Response:<input type="text" name="response"><br><input type="submit" value="Submit"></form>'
         if botProcess == None: #TODO: Do a checkup on bot status (maybe later w/ javascript?)
             result += 'Bot status: Stopped<br><form action="start/"> <button type="submit" name="bot" value="start">Start bot</button></form>'
         else:
