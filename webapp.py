@@ -78,7 +78,7 @@ def index():
     if 'username' in session:
         return redirect('/dashboard/')
     #return 'Index page<br><a href="/login">Login here</a>'
-    return render_template('index.html')
+    return render_template('index.html', test="world")
 
 #ErrorPage
 @app.route('/error/')
