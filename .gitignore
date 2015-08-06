@@ -56,3 +56,6 @@ target/
 #datafiles
 *.dat
 *.cfg
+
+#shell scripts
+*.sh
