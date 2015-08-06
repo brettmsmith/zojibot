@@ -14,7 +14,6 @@ app = Flask(__name__) #TODO: get some real sqlalchemy in here
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ["DATABASE_URL"]#'postgresql://localhost/test.db'
 db = SQLAlchemy(app)
 
-#TODO: Make a master file that takes name and runs a new instance of the bot
 
 try:
     CHANNEL = sys.argv[1]
@@ -103,11 +102,7 @@ def sendMessage(m):
     #s.send('HELPOP USERCMDS\r\n')
 
 def run():
-    global readbuffer
-    global username
-    global said
-    global s
-    global timecount
+    global readbuffer, username, said, s, timecount
     while True:
         try:
             readbuffer = readbuffer + s.recv(4096)

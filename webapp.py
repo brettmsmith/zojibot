@@ -4,13 +4,11 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from subprocess import Popen, PIPE
 import re, requests, os, subprocess
 
-#fs = open('appauth.dat')
 global userToken, CLIENTID, CLIENTSECRET, botProcess
-CLIENTID = os.getenv("CLIENTID")#str.rstrip(fs.readline())
-CLIENTSECRET = os.getenv("CLIENTSECRET")#str.rstrip(fs.readline())
-SECRET_KEY = os.environ["SECRET_KEY"]#str.rstrip(fs.readline())
-print 'Secret key:'+SECRET_KEY
-#fs.close()
+CLIENTID = os.getenv("CLIENTID")
+CLIENTSECRET = os.getenv("CLIENTSECRET")
+SECRET_KEY = os.environ["SECRET_KEY"]
+
 userToken = None
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ["DATABASE_URL"]#'postgresql://localhost/test.db'
@@ -156,7 +154,7 @@ def stopbot(username=None):
         if session['username'] == username:
             if botProcess != None:
                 print 'STOPPING BOT'
-                botProcess.terminate()
+                botProcess.kill()
                 botProcess = None
     return redirect('/user/'+username)
 
@@ -230,7 +228,6 @@ def run():
     #app.debug = True
     db.create_all()
     #db.drop_all()
-    print 'Setting secret key to ' + SECRET_KEY
     app.secret_key = SECRET_KEY
     #app.run()
 
