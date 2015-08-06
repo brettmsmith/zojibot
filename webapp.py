@@ -5,8 +5,8 @@ from subprocess import Popen, PIPE
 import re, requests, os, subprocess, signal
 
 global userToken, CLIENTID, CLIENTSECRET, botProcess
-CLIENTID = os.getenv("CLIENTID")
-CLIENTSECRET = os.getenv("CLIENTSECRET")
+CLIENTID = os.environ["CLIENTID"]
+CLIENTSECRET = os.environ[]"CLIENTSECRET"]
 SECRET_KEY = os.environ["SECRET_KEY"]
 
 userToken = None
@@ -72,16 +72,20 @@ def getUserCommands(user, s):#TODO: Need to find a way to parse, someone could t
 def setUserCommands(user, s):
     pass
 
+#HomePage
 @app.route('/')
 def index():
     if 'username' in session:
         return redirect('/dashboard/')
-    return 'Index page<br><a href="/login">Login here</a>'
+    #return 'Index page<br><a href="/login">Login here</a>'
+    return render_template('index.html')
 
+#ErrorPage
 @app.route('/error/')
 def error():
     return 'Got an error'
 
+#LoginPage
 @app.route('/login/') #use redirect() to redirect user TODO: might want to move the userCode part to a /callback/ page
 def login():#TODO: add some try/catches around file stuff and curl stuff
     global userToken, CLIENTID, CLIENTSECRET
@@ -135,6 +139,7 @@ def login():#TODO: add some try/catches around file stuff and curl stuff
         print "Printing for posterity:\nClientid: "+CLIENTID+"\nURL: "+redirectURL
         return redirect(redirectURL)
 
+#StartBotPage
 @app.route('/start/')
 def startbot():
     global botProcess
@@ -146,6 +151,7 @@ def startbot():
             botProcess = subprocess.Popen('python bot.py '+username, shell=True, preexec_fn=os.setsid).pid
     return redirect('/dashboard/')
 
+#StopBotPage
 @app.route('/stop/')
 def stopbot():
     global botProcess
@@ -161,6 +167,7 @@ def stopbot():
                 return 'Error: '+str(e)
     return redirect('/dashboard/')
 
+#DashboardPage
 @app.route('/dashboard/')#TODO: add command editing and saving, then restart bot
 def profile():
     global botProcess
@@ -180,7 +187,7 @@ def profile():
         return 'Please <a href="/login">Login</a><br>'
 
 
-    #check for token
+#AddCommandPage
 @app.route('/add/')
 def addCommand():
 
@@ -196,6 +203,7 @@ def addCommand():
     else: #no username in session
         return 'Please <a href="/login">Login</a><br>'
 
+#EditCommandsPage
 @app.route('/edit/')
 def editCommands():
 
@@ -215,6 +223,7 @@ def editCommands():
     else: #no username in session
         return 'Please <a href="/login">Login</a><br>'
 
+#LogoutPage
 @app.route('/logout/')
 def logout():
     session.pop('username', None)
