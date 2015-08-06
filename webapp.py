@@ -143,7 +143,7 @@ def startbot(username=None):
         if session['username'] == username:
             if botProcess == None:
                 print 'STARTING BOT'
-                botProcess = subprocess.Popen('python bot.py '+username, shell=True, preexec_fn=os.setsid)
+                botProcess = subprocess.Popen('python bot.py '+username, shell=True, preexec_fn=os.setsid).pid
     return redirect('/user/'+username)
 
 @app.route('/user/<username>/stop/')
@@ -156,7 +156,7 @@ def stopbot(username=None):
                 try:
                     print 'STOPPING BOT'
                     #botProcess.kill()
-                    os.killpg(botProcess.pid, signal.SIGTERM)
+                    os.killpg(botProcess, signal.SIGTERM)
                     botProcess = None
                 except Exception as e:
                     return 'Error: '+str(e)
