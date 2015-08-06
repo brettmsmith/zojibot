@@ -143,7 +143,7 @@ def startbot(username=None):
         if session['username'] == username:
             if botProcess == None:
                 print 'STARTING BOT'
-                botProcess = subprocess.Popen('python bot.py '+username, shell=True)
+                botProcess = subprocess.Popen('python bot.py '+username, shell=True, preexec_fn=os.setsid)
     return redirect('/user/'+username)
 
 @app.route('/user/<username>/stop/')
