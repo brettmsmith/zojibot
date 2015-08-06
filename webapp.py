@@ -176,15 +176,17 @@ def profile():
     if 'username' in session:
         username = session['username']
         #check request to start bot
-        result = 'Hello, ' + username + '<br> <a href="/edit/">Edit</a><br> Add new command: <br><form action="/add/"> Command: <input type="text" name="command"><br>Response:<input type="text" name="response"><br><input type="submit" value="Submit"></form>'
+        #result = 'Hello, ' + username + '<br> <a href="/edit/">Edit</a><br> Add new command: <br><form action="/add/"> Command: <input type="text" name="command"><br>Response:<input type="text" name="response"><br><input type="submit" value="Submit"></form>'
+        button = ''
         if botProcess == None: #TODO: Do a checkup on bot status (maybe later w/ javascript?)
-            result += 'Bot status: Stopped<br><form action="/start/"> <button type="submit" name="bot" value="start">Start bot</button></form>'
+            button = 'Bot status: Stopped<br><form action="/start/"> <button type="submit" name="bot" value="start">Start bot</button></form>'
         else:
-            result += 'Bot status: Started<br><form action="/stop/"> <button type="submit" name="bot" value="stop">Stop bot</button></form>'
-        return result+'<br><a href="/logout/">Logout</a>'
+            button = 'Bot status: Started<br><form action="/stop/"> <button type="submit" name="bot" value="stop">Stop bot</button></form>'
+        #return result+'<br><a href="/logout/">Logout</a>'
+        return render_template('dashboard.html', username=username, button=button)
 
     else: #no username in session
-        return 'Please <a href="/login">Login</a><br>'
+        return render_template('login_redirect.html')
 
 
 #AddCommandPage
@@ -201,7 +203,7 @@ def addCommand():
         return redirect('/dashboard/')
 
     else: #no username in session
-        return 'Please <a href="/login">Login</a><br>'
+        return render_template('login_redirect.html')
 
 #EditCommandsPage
 @app.route('/edit/')
@@ -221,7 +223,7 @@ def editCommands():
         else:#user not found
             pass #should be redirect to login screen
     else: #no username in session
-        return 'Please <a href="/login">Login</a><br>'
+        return render_template('login_redirect.html')
 
 #LogoutPage
 @app.route('/logout/')
