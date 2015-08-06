@@ -6,7 +6,7 @@ import re, requests, os, subprocess, signal
 
 global userToken, CLIENTID, CLIENTSECRET, botProcess
 CLIENTID = os.environ["CLIENTID"]
-CLIENTSECRET = os.environ[]"CLIENTSECRET"]
+CLIENTSECRET = os.environ["CLIENTSECRET"]
 SECRET_KEY = os.environ["SECRET_KEY"]
 
 userToken = None
