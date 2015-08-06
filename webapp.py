@@ -75,7 +75,7 @@ def setUserCommands(user, s):
 @app.route('/')
 def index():
     if 'username' in session:
-        return redirect('/user/'+session['username'])
+        return redirect('/dashboard/')
     return 'Index page<br><a href="/login">Login here</a>'
 
 @app.route('/error/')
