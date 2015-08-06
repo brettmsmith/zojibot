@@ -124,7 +124,7 @@ def login():#TODO: add some try/catches around file stuff and curl stuff
                     print 'Error: '+str(e)
                     return redirect('/error/')
                 print 'Redirecting to profile'
-                return redirect(url_for('profile',username=username))
+                return redirect('/dashboard/')
             else:#error
                 print 'Error: username not parsed'
         else:#error getting token
@@ -135,92 +135,85 @@ def login():#TODO: add some try/catches around file stuff and curl stuff
         print "Printing for posterity:\nClientid: "+CLIENTID+"\nURL: "+redirectURL
         return redirect(redirectURL)
 
-@app.route('/user/<username>/start/')
-def startbot(username=None):
+@app.route('/start/')
+def startbot():
     global botProcess
 
     if 'username' in session:
-        if session['username'] == username:
-            if botProcess == None:
-                print 'STARTING BOT'
-                botProcess = subprocess.Popen('python bot.py '+username, shell=True, preexec_fn=os.setsid).pid
-    return redirect('/user/'+username)
+        username = session['username']
+        if botProcess == None:
+            print 'STARTING BOT'
+            botProcess = subprocess.Popen('python bot.py '+username, shell=True, preexec_fn=os.setsid).pid
+    return redirect('/dashboard/')
 
-@app.route('/user/<username>/stop/')
-def stopbot(username=None):
+@app.route('/stop/')
+def stopbot():
     global botProcess
 
     if 'username' in session:
-        if session['username'] == username:
-            if botProcess != None:
-                try:
-                    print 'STOPPING BOT'
-                    #botProcess.kill()
-                    os.killpg(botProcess, signal.SIGTERM)
-                    botProcess = None
-                except Exception as e:
-                    return 'Error: '+str(e)
-    return redirect('/user/'+username)
+        if botProcess != None:
+            try:
+                print 'STOPPING BOT'
+                #botProcess.kill()
+                os.killpg(botProcess, signal.SIGTERM)
+                botProcess = None
+            except Exception as e:
+                return 'Error: '+str(e)
+    return redirect('/dashboard/')
 
-@app.route('/user/<username>/')#TODO: add command editing and saving, then restart bot
-def profile(username=None):
+@app.route('/dashboard/')#TODO: add command editing and saving, then restart bot
+def profile():
     global botProcess
-    if username != None:
+
         #TODO: Add in database stuff
-        if 'username' in session:
-            if session['username'] == username:
-                #check request to start bot
-                result = 'Hello, ' + username + '<br> <a href="/user/' + username + '/edit">Edit</a><br> Add new command: <br><form action="/user/'+username+'/add"> Command: <input type="text" name="command"><br>Response:<input type="text" name="response"><br><input type="submit" value="Submit"></form>'
-                if botProcess == None: #TODO: Do a checkup on bot status (maybe later w/ javascript?)
-                    result += 'Bot status: Stopped<br><form action="start/"> <button type="submit" name="bot" value="start">Start bot</button></form>'
-                else:
-                    result += 'Bot status: Started<br><form action="stop/"> <button type="submit" name="bot" value="stop">Stop bot</button></form>'
-                return result+'<br><a href="/logout/">Logout</a>'
+    if 'username' in session:
+        username = session['username']
+        #check request to start bot
+        result = 'Hello, ' + username + '<br> <a href="/user/' + username + '/edit">Edit</a><br> Add new command: <br><form action="/user/'+username+'/add"> Command: <input type="text" name="command"><br>Response:<input type="text" name="response"><br><input type="submit" value="Submit"></form>'
+        if botProcess == None: #TODO: Do a checkup on bot status (maybe later w/ javascript?)
+            result += 'Bot status: Stopped<br><form action="start/"> <button type="submit" name="bot" value="start">Start bot</button></form>'
+        else:
+            result += 'Bot status: Started<br><form action="stop/"> <button type="submit" name="bot" value="stop">Stop bot</button></form>'
+        return result+'<br><a href="/logout/">Logout</a>'
 
-            else:#username doesn't match session
-                return '<p>Username doesn\'t match</p><br><a href="/">Index</a>'
-        else: #no username in session
-            return '<p>No token</p><br><a href="/">Index</a>'
-    else:#error
+    else: #no username in session
         return 'Please <a href="/login">Login</a><br>'
+
+
     #check for token
-@app.route('/user/<username>/add')
-def addCommand(username=None):
-    if username != None:
-        if 'username' in session:
-            if session['username'] == username:
-                command = request.args.get('command')
-                response = request.args.get('response')
-                newCommand = Command(username, command, response)
-                db.session.add(newCommand)
-                db.session.commit()
-                return redirect('/user/'+username+'/')
-            else:#username doesn't match session
-                return '<p>Username doesn\'t match</p><br><a href="/">Index</a>'
-        else: #no username in session
-            return '<p>No token</p><br><a href="/">Index</a>'
-    else:
-        pass
-@app.route('/user/<username>/edit/')
-def editCommands(username=None):
-    if username != None:
-        #TODO: Sessioning, check for token
-        if 'username' in session:
-            if session['username'] == username:
-                query = User.query.filter_by(username=username)
-                if query != None:
-                    commands = Command.query.filter_by(username=username)
-                    result = 'Commands<br>'
-                    if commands != None:
-                        for c in commands:
-                            result = result + repr(c) + '<br>'
-                    return result
-                else:#user not found
-                    pass #should be redirect to login screen
-            else:#username doesn't match session
-                return '<p>Username doesn\'t match</p><br><a href="/">Index</a>'
-        else: #no username in session
-            return '<p>No token</p><br><a href="/">Index</a>'
+@app.route('/add/')
+def addCommand():
+
+    if 'username' in session:
+        username = session['username']
+        command = request.args.get('command')
+        response = request.args.get('response')
+        newCommand = Command(username, command, response)
+        db.session.add(newCommand)
+        db.session.commit()
+        return redirect('/dashboard/')
+
+    else: #no username in session
+        return 'Please <a href="/login">Login</a><br>'
+
+@app.route('/edit/')
+def editCommands():
+
+    #TODO: Sessioning, check for token
+    if 'username' in session:
+        username = session['username']
+        query = User.query.filter_by(username=username)
+        if query != None:
+            commands = Command.query.filter_by(username=username)
+            result = 'Commands<br>'
+            if commands != None:
+                for c in commands:
+                    result = result + repr(c) + '<br>'
+            return result
+        else:#user not found
+            pass #should be redirect to login screen
+    else: #no username in session
+        return 'Please <a href="/login">Login</a><br>'
 
 @app.route('/logout/')
 def logout():
