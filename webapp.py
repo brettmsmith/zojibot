@@ -153,10 +153,13 @@ def stopbot(username=None):
     if 'username' in session:
         if session['username'] == username:
             if botProcess != None:
-                print 'STOPPING BOT'
-                #botProcess.kill()
-                os.killpg(botProcess.pid, signal.SIGTERM)
-                botProcess = None
+                try:
+                    print 'STOPPING BOT'
+                    #botProcess.kill()
+                    os.killpg(botProcess.pid, signal.SIGTERM)
+                    botProcess = None
+                except Exception as e:
+                    return 'Error: '+str(e)
     return redirect('/user/'+username)
 
 @app.route('/user/<username>/')#TODO: add command editing and saving, then restart bot
