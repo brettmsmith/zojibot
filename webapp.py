@@ -226,9 +226,10 @@ def editCommands():
         query = User.query.filter_by(username=username)
         if query != None:
             commands = Command.query.filter_by(username=username)
-            result = 'Commands<br>'
+            result = 'Commands:<br>'
             if commands != None:
                 for c in commands:
+                    print 'Commands != None'
                     result = result + repr(c) + '<br>'
             else:
                 result = result + 'None'
