@@ -180,18 +180,21 @@ def profile():
         action = ''
         value = ''
         text = ''
+        status = ''
         if botProcess == None: #TODO: Do a checkup on bot status (maybe later w/ javascript?)
             #button = 'Bot status: Stopped<br><form action="/start/"> <button type="submit" name="bot" value="start">Start bot</button></form>'
+            status = 'Stopped'
             action = '"/start/"'
             value = "start"
             text = "Start bot"
         else:
             #button = 'Bot status: Started<br><form action="/stop/"> <button type="submit" name="bot" value="stop">Stop bot</button></form>'
+            status = 'Running'
             action = '"/stop/"'
             value = "stop"
             text = "Stop bot"
         #return result+'<br><a href="/logout/">Logout</a>'
-        return render_template('dashboard.html', username=username, action=action, value=value, text=text)
+        return render_template('dashboard.html', username=username, action=action, value=value, text=text, status=status)
 
     else: #no username in session
         return render_template('login_redirect.html')
