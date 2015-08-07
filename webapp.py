@@ -226,14 +226,14 @@ def editCommands():
         query = User.query.filter_by(username=username)
         if query != None:
             commands = Command.query.filter_by(username=username)
-            print 'Commands:'+len(commands)
             result = 'Commands:<br>'
             if commands != None:
+                count = 0
                 for c in commands:
-
+                    count += 1
                     result = result + repr(c) + '<br>'
-            else:
-                result = result + 'None'
+                if count == 0:
+                    result = result + 'None'
             return result
         else:#user not found
             pass #should be redirect to login screen
