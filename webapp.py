@@ -230,6 +230,8 @@ def editCommands():
             if commands != None:
                 for c in commands:
                     result = result + repr(c) + '<br>'
+            else:
+                result = result + 'None'
             return result
         else:#user not found
             pass #should be redirect to login screen
