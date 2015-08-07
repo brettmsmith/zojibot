@@ -229,7 +229,7 @@ def editCommands():
             result = 'Commands:<br>'
             if commands != None:
                 for c in commands:
-                    print 'Commands != None'
+                    print str(commands)
                     result = result + repr(c) + '<br>'
             else:
                 result = result + 'None'
