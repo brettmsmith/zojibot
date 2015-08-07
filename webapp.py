@@ -219,7 +219,6 @@ def addCommand():
 #EditCommandsPage
 @app.route('/edit/')
 def editCommands():
-
     #TODO: Sessioning, check for token
     if 'username' in session:
         username = session['username']
@@ -234,6 +233,7 @@ def editCommands():
                     result = result + repr(c) + '<br>'
                 if count == 0:
                     result = result + 'None'
+            result += '<br><a href="/dashboard">Home</a>'
             return result
         else:#user not found
             pass #should be redirect to login screen
