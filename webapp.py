@@ -177,13 +177,19 @@ def profile():
         username = session['username']
         #check request to start bot
         #result = 'Hello, ' + username + '<br> <a href="/edit/">Edit</a><br> Add new command: <br><form action="/add/"> Command: <input type="text" name="command"><br>Response:<input type="text" name="response"><br><input type="submit" value="Submit"></form>'
-        button = ''
+        action, value, text = ''
         if botProcess == None: #TODO: Do a checkup on bot status (maybe later w/ javascript?)
-            button = 'Bot status: Stopped<br><form action="/start/"> <button type="submit" name="bot" value="start">Start bot</button></form>'
+            #button = 'Bot status: Stopped<br><form action="/start/"> <button type="submit" name="bot" value="start">Start bot</button></form>'
+            action = '"/start/"'
+            value = "start"
+            text = "Start bot"
         else:
-            button = 'Bot status: Started<br><form action="/stop/"> <button type="submit" name="bot" value="stop">Stop bot</button></form>'
+            #button = 'Bot status: Started<br><form action="/stop/"> <button type="submit" name="bot" value="stop">Stop bot</button></form>'
+            action = '"/stop/"'
+            value = "stop"
+            text = "Stop bot"
         #return result+'<br><a href="/logout/">Logout</a>'
-        return render_template('dashboard.html', username=username, button=button)
+        return render_template('dashboard.html', username=username, action=action, value=value, text=text)
 
     else: #no username in session
         return render_template('login_redirect.html')
