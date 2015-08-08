@@ -72,7 +72,7 @@ def checkCommands(readline):#TODO: mod only commands and command cooldowns
             (c, sep, n) = after.partition(' ')
             print 'Editing command in the database: '+c
             com = Command.query.filter_by(username=CHANNEL, comm=c).first()
-            com.editCommand(after)
+            com.editCommand(n)
             db.session.commit()
 
 def connect():
