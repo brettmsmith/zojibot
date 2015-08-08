@@ -75,6 +75,7 @@ def checkCommands(readline):#TODO: mod only commands and command cooldowns
             print 'Calling editCommand on '+n
             com.editCommand(n)
             db.session.commit()
+            loadUserCommands(CHANNEL)
 
 def connect():
     global s, readbuffer, timecount
