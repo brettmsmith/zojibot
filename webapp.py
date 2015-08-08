@@ -204,7 +204,7 @@ def addCommand():
         print 'Adding command: '+command
         try:
             if command != '!edit':
-                duplicate = Command.query.filter_by(username=username, comm=command)
+                duplicate = Command.query.filter_by(username=username, comm=command).first()
                 print 'Checking...duplicate: '+str(duplicate)
                 if duplicate == None:
                     newCommand = Command(username, command, response)
