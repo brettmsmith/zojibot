@@ -131,7 +131,7 @@ def run():
         readbuffer = last
 
 
-        for line in temp:
+        for line in temp: #TODO: make it so everyone can do commands; then maybe mod/caster only; then commands on cooldowns;
             reg = re.search(username, line)
             #print 'original match ' + line
             if reg != None:
