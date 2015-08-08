@@ -202,11 +202,14 @@ def addCommand():
         command = request.args.get('command')
         response = request.args.get('response')
         print 'Adding command: '+command
-        if command != '!edit':
-            newCommand = Command(username, command, response)
-            db.session.add(newCommand)
-            db.session.commit()
-        return redirect('/dashboard/')
+        try:
+            if command != '!edit':
+                newCommand = Command(username, command, response)
+                db.session.add(newCommand)
+                db.session.commit()
+            return redirect('/dashboard/')
+        except Exception as e:
+            return 'Error: '+ str(e)
 
     else: #no username in session
         return render_template('login_redirect.html')
