@@ -201,6 +201,7 @@ def addCommand():
         username = session['username']
         command = request.args.get('command')
         response = request.args.get('response')
+        print 'Adding command: '+command
         if command != '!edit':
             newCommand = Command(username, command, response)
             db.session.add(newCommand)
