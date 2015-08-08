@@ -161,7 +161,7 @@ def stopbot():
     return redirect('/dashboard/')
 
 #DashboardPage
-@app.route('/dashboard/')#TODO: add command editing and saving, then restart bot
+@app.route('/dashboard/')#TODO: add command editing and saving, then restart bot; Also need to put user check for people already logged in when database resets;
 def profile():
     global botProcess
 
@@ -205,7 +205,7 @@ def addCommand():
         try:
             if command != '!edit':
                 duplicate = Command.query.filter_by(username=username, comm=command)
-                if duplicate != None:
+                if duplicate == None:
                     newCommand = Command(username, command, response)
                     db.session.add(newCommand)
                     db.session.commit()
@@ -249,8 +249,8 @@ def logout():
 #if __name__ == '__main__':
 def run():
     #app.debug = True
-    db.create_all()
-    #db.drop_all()
+    #db.create_all()
+    db.drop_all()
     app.secret_key = SECRET_KEY
     #app.run()
 
