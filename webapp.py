@@ -37,7 +37,7 @@ class Command(db.Model):
     comm = db.Column(db.String(1000), unique=False)
     response = db.Column(db.String(1000), unique=False)
 
-    def editCommand(newResponse):
+    def editCommand(self, newResponse):
         self.response = newResponse
 
     def __init__(self, username, comm, response):
