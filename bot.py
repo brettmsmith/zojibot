@@ -69,9 +69,9 @@ def checkCommands(readline):#TODO: mod only commands and command cooldowns
         (first, sep, after) = readline.partition(' ')
         print 'First: '+first+" ; After: "+after
         if first == '!edit':
-            (first, sep, after) = first.partition(' ')
-            print 'Editing command in the database'
-            com = Command.query.filter_by(username=CHANNEL, comm=first).first()
+            (c, sep, n) = first.partition(' ')
+            print 'Editing command in the database: '+c
+            com = Command.query.filter_by(username=CHANNEL, comm=c).first()
             com.editCommand(after)
             db.session.commit()
 

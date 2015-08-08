@@ -162,7 +162,7 @@ def stopbot():
 
 #DashboardPage
 @app.route('/dashboard/')#TODO: add command editing and saving, then restart bot; Also need to put user check for people already logged in when database resets;
-def profile():
+def profile():#TODO: Have a db(?) place for bot running, so don't have to be in session to have it running
     global botProcess
 
         #TODO: Add in database stuff
