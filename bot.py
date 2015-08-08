@@ -4,7 +4,7 @@ from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 from webapp import Command
 
-global HOST, PORT, PASS, NICK, CHANNEL
+global HOST, PORT, PASS, NICK, CHANNEL, db
 HOST = "irc.twitch.tv"
 PORT = 6667
 PASS = os.environ['bot_pass']
@@ -56,7 +56,7 @@ def checkSubs():
     pass
 
 def checkCommands(readline):#TODO: mod only commands and command cooldowns
-    global commands
+    global commands, db
 
     #2 ways to do it, either check whole msg, or have the command be the only thing allowed
     #going to do only thing allowed, much much faster
@@ -65,6 +65,16 @@ def checkCommands(readline):#TODO: mod only commands and command cooldowns
     print type(readline) is str
     if readline in commands:
         sendMessage(commands[readline])
+    else:
+        (first, sep, after) = readline.partition(' ')
+        if first == '!edit':
+            (first, sep, after) = first.partition(' ')
+            print 'Editing command in the database'
+            com = Command.query.filter_by(username=CHANNEL, comm=first)
+            com.editCommand(after)
+            db.session.commit()
+
+
 
 
 def connect():
@@ -117,7 +127,7 @@ def run():
         temp = readbuffer.split("\n")
         last = temp.pop()
         #print last
-        print temp
+        #print temp
         readbuffer = last
 
 

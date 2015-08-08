@@ -37,6 +37,9 @@ class Command(db.Model):
     comm = db.Column(db.String(1000), unique=True)
     response = db.Column(db.String(1000), unique=False)
 
+    def editCommand(newResponse):
+        self.response = newResponse
+
     def __init__(self, username, comm, response):
         self.username = username
         self.comm = comm
@@ -62,23 +65,13 @@ def parseCurlForAuthToken(f):#get client token from json response
         print 'Returning auth token as None'
         return None
 
-def getUserCommands(user, s):#TODO: Need to find a way to parse, someone could type anything as a command
-    #Basic delimiter will just be '|'
-    if s != 'None':
-        pass
-    else:#No commands
-        return None
-
-def setUserCommands(user, s):
-    pass
-
 #HomePage
 @app.route('/')
 def index():
     if 'username' in session:
         return redirect('/dashboard/')
     #return 'Index page<br><a href="/login">Login here</a>'
-    return render_template('index.html', test="world")
+    return render_template('index.html')
 
 #ErrorPage
 @app.route('/error/')
@@ -208,9 +201,10 @@ def addCommand():
         username = session['username']
         command = request.args.get('command')
         response = request.args.get('response')
-        newCommand = Command(username, command, response)
-        db.session.add(newCommand)
-        db.session.commit()
+        if command != '!edit':
+            newCommand = Command(username, command, response)
+            db.session.add(newCommand)
+            db.session.commit()
         return redirect('/dashboard/')
 
     else: #no username in session
