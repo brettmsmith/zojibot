@@ -34,7 +34,7 @@ class User(db.Model):
 class Command(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String(80), db.ForeignKey('user.username'))
-    comm = db.Column(db.String(1000), unique=True)
+    comm = db.Column(db.String(1000), unique=False)
     response = db.Column(db.String(1000), unique=False)
 
     def editCommand(newResponse):
@@ -194,7 +194,7 @@ def profile():
 
 
 #AddCommandPage
-@app.route('/add/')
+@app.route('/add/') #TODO: Add in duplicate check
 def addCommand():
 
     if 'username' in session:
@@ -204,9 +204,11 @@ def addCommand():
         print 'Adding command: '+command
         try:
             if command != '!edit':
-                newCommand = Command(username, command, response)
-                db.session.add(newCommand)
-                db.session.commit()
+                duplicate = Command.query.filter_by(username=username, comm=command)
+                if duplicate != None:
+                    newCommand = Command(username, command, response)
+                    db.session.add(newCommand)
+                    db.session.commit()
             return redirect('/dashboard/')
         except Exception as e:
             return 'Error: '+ str(e)

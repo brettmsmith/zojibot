@@ -59,3 +59,4 @@ target/
 
 #shell scripts
 *.sh
+*.bat
