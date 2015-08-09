@@ -44,7 +44,8 @@ def loadUserCommands(f):#get user's config file and load their commands checking
     #commandRE = 'Command:\s(.+)\sResponse:'
     #responseRE = 'Response:\s(.+)\sCommand\sID'
     try:
-        result = db.execute("select comm, response from Command where username="+f)
+        print '>Username is '+f
+        result = db.execute("select comm, response from Command where username="+f+";")
         for row in result:
             print 'Got call: '+row['comm']+' and response: '+row['response']
             commands.update({row['comm']:row['response']})
