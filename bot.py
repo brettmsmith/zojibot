@@ -1,19 +1,22 @@
 #! /usr/bin/python
 import sys, socket, string, re, os
 from flask import Flask
-from flask.ext.sqlalchemy import SQLAlchemy
+#from flask.ext.sqlalchemy import SQLAlchemy
 from webapp import Command
+from sqlalchemy import create_engine
 
 global HOST, PORT, PASS, NICK, CHANNEL, db
 HOST = "irc.twitch.tv"
 PORT = 6667
 PASS = os.environ['bot_pass']
 NICK = 'zojibot'
-
+'''
 app = Flask(__name__) #TODO: get some real sqlalchemy in here
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ["DATABASE_URL"]#'postgresql://localhost/test.db'
 db = SQLAlchemy(app)
+'''
 
+db = create_engine(os.environ["DATABASE_URL"])
 
 try:
     CHANNEL = sys.argv[1]
@@ -35,11 +38,17 @@ global commands
 commands = {}
 
 def loadUserCommands(f):#get user's config file and load their commands checking chat
-    global commands
-    rawCommands = Command.query.filter_by(username=f)
-    commandRE = 'Command:\s(.+)\sResponse:'
-    responseRE = 'Response:\s(.+)\sCommand\sID'
-    for line in rawCommands:
+    global commands, db
+    commands = {}
+    #rawCommands = Command.query.filter_by(username=f)
+    #commandRE = 'Command:\s(.+)\sResponse:'
+    #responseRE = 'Response:\s(.+)\sCommand\sID'
+    result = db.execute("select comm, response from Command where username="+f)
+    for row in result:
+        print 'Got call: '+row['comm']+' and response: '+row['response']
+        commands.update({row['comm']:row['response']})
+
+    '''for line in rawCommands:
         #print 'Grabbing in: '+repr(line)
         cre = re.search(commandRE, repr(line)).group(1)
         rre = re.search(responseRE, repr(line)).group(1)
@@ -47,7 +56,7 @@ def loadUserCommands(f):#get user's config file and load their commands checking
         #print 'Response: '+rre
         commands[cre] = rre
         #print 'Got '+commands[re.search(commandRE, repr(line))]+' for '+re.search(commandRE, repr(line))
-
+    '''
 
 def checkSpam(line, name):#TODO: t/o links, more
     pass
@@ -55,7 +64,7 @@ def checkSpam(line, name):#TODO: t/o links, more
 def checkSubs():
     pass
 
-def checkCommands(readline):#TODO: mod only commands and command cooldowns
+def checkCommands(readline):#TODO: mod only commands and command cooldowns; changing commands here doesn't change commands in app db;
     global commands, db
 
     #2 ways to do it, either check whole msg, or have the command be the only thing allowed
@@ -71,10 +80,11 @@ def checkCommands(readline):#TODO: mod only commands and command cooldowns
         if first == '!edit':
             (c, sep, n) = after.partition(' ')
             print 'Editing command in the database: '+c+' to '+n
-            com = Command.query.filter_by(username=CHANNEL, comm=c).first()
+            #com = Command.query.filter_by(username=CHANNEL, comm=c).first()
             print 'Calling editCommand on '+n
-            com.editCommand(n)
-            db.session.commit()
+            result = db.execute("update Command set response="+n+" where username="+CHANNEL+", comm="first)
+            #com.editCommand(n)
+            #db.session.commit()
             loadUserCommands(CHANNEL)
 
 def connect():
@@ -129,7 +139,6 @@ def run():
         #print last
         #print temp
         readbuffer = last
-
 
         for line in temp: #TODO: make it so everyone can do commands; then maybe mod/caster only; then commands on cooldowns;
             reg = re.search(username, line)
