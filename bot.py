@@ -50,6 +50,10 @@ def loadUserCommands(f):#get user's config file and load their commands checking
             commands.update({row['comm']:row['response']})
     except Exception as e:
         print 'Error loading commands: '+str(e)
+        print 'Trying other stuff'
+        res = db.execute("select comm, response, username from Command")
+        for r in res:
+            print '>Row: '+r
 
     '''for line in rawCommands:
         #print 'Grabbing in: '+repr(line)
