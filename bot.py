@@ -43,10 +43,13 @@ def loadUserCommands(f):#get user's config file and load their commands checking
     #rawCommands = Command.query.filter_by(username=f)
     #commandRE = 'Command:\s(.+)\sResponse:'
     #responseRE = 'Response:\s(.+)\sCommand\sID'
-    result = db.execute("select comm, response from Command where username="+f)
-    for row in result:
-        print 'Got call: '+row['comm']+' and response: '+row['response']
-        commands.update({row['comm']:row['response']})
+    try:
+        result = db.execute("select comm, response from Command where username="+f)
+        for row in result:
+            print 'Got call: '+row['comm']+' and response: '+row['response']
+            commands.update({row['comm']:row['response']})
+    except Exception as e:
+        print 'Error loading commands: '+str(e)
 
     '''for line in rawCommands:
         #print 'Grabbing in: '+repr(line)
@@ -82,7 +85,10 @@ def checkCommands(readline):#TODO: mod only commands and command cooldowns; chan
             print 'Editing command in the database: '+c+' to '+n
             #com = Command.query.filter_by(username=CHANNEL, comm=c).first()
             print 'Calling editCommand on '+n
-            result = db.execute("update Command set response="+n+" where username="+CHANNEL+", comm="first)
+            try:
+                result = db.execute("update Command set response="+n+" where username="+CHANNEL+", comm="first)
+            except Exception as e:
+                print 'Error editing command: '+str(e)
             #com.editCommand(n)
             #db.session.commit()
             loadUserCommands(CHANNEL)
