@@ -45,14 +45,14 @@ def loadUserCommands(f):#get user's config file and load their commands checking
     #responseRE = 'Response:\s(.+)\sCommand\sID'
     try:
         print '>Username is '+f
-        result = db.execute("select comm, response from Command where username="+f+";")
+        result = db.execute("select comm, response from Command where username='"+f+"';")
         for row in result:
             print 'Got call: '+row['comm']+' and response: '+row['response']
             commands.update({row['comm']:row['response']})
     except Exception as e:
         print 'Error loading commands: '+str(e)
         print 'Trying other stuff'
-        res = db.execute("select comm, response, username from Command where comm='!hola'")
+        res = db.execute("select comm, response, username from Command where comm='!hola';")
         for r in res:
             print '>Row: '+r['username']+', '+r['comm']+', '+r['response']
 
@@ -91,7 +91,7 @@ def checkCommands(readline):#TODO: mod only commands and command cooldowns; chan
             #com = Command.query.filter_by(username=CHANNEL, comm=c).first()
             print 'Calling editCommand on '+n
             try:
-                result = db.execute("update Command set response="+n+" where username="+CHANNEL+", comm="+first)
+                result = db.execute("update Command set response="+n+" where username='"+CHANNEL+"', comm='"+first+"';")
             except Exception as e:
                 print 'Error editing command: '+str(e)
             #com.editCommand(n)
