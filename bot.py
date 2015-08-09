@@ -16,7 +16,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ["DATABASE_URL"]#'postgresql:/
 db = SQLAlchemy(app)
 '''
 
-db = create_engine(os.environ["DATABASE_URL"])
+db = create_engine(os.environ["DATABASE_URL"], echo=True)
 
 try:
     CHANNEL = sys.argv[1]
@@ -91,8 +91,7 @@ def checkCommands(readline):#TODO: mod only commands and command cooldowns; chan
             #com = Command.query.filter_by(username=CHANNEL, comm=c).first()
             print 'Calling editCommand on '+n
             try:
-                with db.begin() as connection:
-                    connection.execute("update Command set response='"+n+"' where username='"+CHANNEL+"' and comm='"+first+"';")
+                db.execute("update Command set response='"+n+"' where username='"+CHANNEL+"' and comm='"+first+"';")
             except Exception as e:
                 print 'Error editing command: '+str(e)
             #com.editCommand(n)
