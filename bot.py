@@ -53,7 +53,7 @@ def loadUserCommands(f):#get user's config file and load their commands checking
         print 'Trying other stuff'
         res = db.execute("select comm, response, username from Command")
         for r in res:
-            print '>Row: '+r
+            print '>Row: '+r['username']+', '+r['comm']+', '+r['response']
 
     '''for line in rawCommands:
         #print 'Grabbing in: '+repr(line)
