@@ -56,16 +56,6 @@ def loadUserCommands(f):#get user's config file and load their commands checking
         for r in res:
             print '>Row: '+r['username']+', '+r['comm']+', '+r['response']
 
-    '''for line in rawCommands:
-        #print 'Grabbing in: '+repr(line)
-        cre = re.search(commandRE, repr(line)).group(1)
-        rre = re.search(responseRE, repr(line)).group(1)
-        #print 'Command: '+cre
-        #print 'Response: '+rre
-        commands[cre] = rre
-        #print 'Got '+commands[re.search(commandRE, repr(line))]+' for '+re.search(commandRE, repr(line))
-    '''
-
 def checkSpam(line, name):#TODO: t/o links, more
     pass
 
@@ -77,8 +67,6 @@ def checkCommands(readline):#TODO: mod only commands and command cooldowns; chan
 
     #2 ways to do it, either check whole msg, or have the command be the only thing allowed
     #going to do only thing allowed, much much faster
-    #print 'Checking commands: '+readline
-    #print 'Checking command data structure: '+commands[readline]
     print type(readline) is str
     if readline in commands:
         sendMessage(commands[readline])
@@ -88,14 +76,12 @@ def checkCommands(readline):#TODO: mod only commands and command cooldowns; chan
         if first == '!edit':
             (c, sep, n) = after.partition(' ')
             print 'Editing command in the database: '+c+' to '+n
-            #com = Command.query.filter_by(username=CHANNEL, comm=c).first()
             print 'Calling editCommand on '+n
             try:
                 db.execute("update Command set response='"+n+"' where username='"+CHANNEL+"' and comm='"+c+"';")#TODO: SQL sanitation
+                sendMessage('Updated '+c+' to '+n)
             except Exception as e:
                 print 'Error editing command: '+str(e)
-            #com.editCommand(n)
-            #db.session.commit()
             loadUserCommands(CHANNEL)
 
 def connect():
