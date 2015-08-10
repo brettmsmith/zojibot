@@ -91,7 +91,7 @@ def checkCommands(readline):#TODO: mod only commands and command cooldowns; chan
             #com = Command.query.filter_by(username=CHANNEL, comm=c).first()
             print 'Calling editCommand on '+n
             try:
-                db.execute("update Command set response='"+n+"' where username='"+CHANNEL+"' and comm=?", c);#'"+c+"';")#TODO: SQL sanitation
+                db.execute("update Command set response='"+n+"' where username='"+CHANNEL+"' and comm='"+c+"';")#TODO: SQL sanitation
             except Exception as e:
                 print 'Error editing command: '+str(e)
             #com.editCommand(n)
