@@ -174,7 +174,7 @@ def stopbot():
             while killProcess(botProcess) == -1 and failsafe < 50 :
                 failsafe += 1
             botProcess = 0
-            userObject = User.query.filter_by(username=username)
+            userObject = User.query.filter_by(username=username).first()
             userObject.setPid(botProcess)
     return redirect('/dashboard/')
 
