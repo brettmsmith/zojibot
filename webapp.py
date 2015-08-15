@@ -154,9 +154,12 @@ def startbot():
         username = session['username']
         if botProcess == 0:
             print 'STARTING BOT'
-            botProcess = subprocess.Popen('python bot.py '+username, shell=True, preexec_fn=os.setsid).pid
-            userObject = User.query.filter_by(username=username)
-            userObject.setPid(botProcess)
+            try:
+                botProcess = subprocess.Popen('python bot.py '+username, shell=True, preexec_fn=os.setsid).pid
+                userObject = User.query.filter_by(username=username)
+                userObject.setPid(botProcess)
+            except Exception as e:
+                print 'Error starting bot: '+str(e)
     return redirect('/dashboard/')
 
 #StopBotPage
