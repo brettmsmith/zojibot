@@ -24,9 +24,12 @@ class User(db.Model):#TODO: Add pid for double-checking process killing
     commandSet = db.relationship('Command', backref='commands')
     pid = db.Column(db.Integer)
 
+    def setPid(self, p=0):
+        self.pid = p
 
     def __init__(self, username):
         self.username = username
+        self.pid = 0
         #self.commandSet = 'None'
 
     def __repr__(self):
@@ -39,14 +42,11 @@ class Command(db.Model):
     response = db.Column(db.String(1000), unique=False)
     userLevel = db.Column(db.Integer)
 
-
-    def editCommand(self, newResponse):
-        self.response = newResponse
-
-    def __init__(self, username, comm, response):
+    def __init__(self, username, comm, response, userLevel=0):
         self.username = username
         self.comm = comm
         self.response = response
+        self.userLevel = userLevel
 
     def __repr__(self):
         return 'Username: %s Command: %s Response: %s Command ID: %s' % (self.username, self.comm, self.response, self.id)
@@ -68,6 +68,14 @@ def parseCurlForAuthToken(f):#get client token from json response
         print 'Returning auth token as None'
         return None
 
+def killProcess(pid):
+    try:
+        os.kill(pid, signal.SIGTERM)
+        os.kill(pid, signal.SIGTERM)
+        return -1
+    except OSError:
+        return 1
+
 #HomePage
 @app.route('/')
 def index():
@@ -84,7 +92,7 @@ def error():
 #LoginPage
 @app.route('/login/') #use redirect() to redirect user TODO: might want to move the userCode part to a /callback/ page
 def login():#TODO: add some try/catches around file stuff and curl stuff
-    global userToken, CLIENTID, CLIENTSECRET
+    global userToken, CLIENTID, CLIENTSECRET, botProcess #TODO: add error catching for graceful failure (especially for twitch authorization)
     userCode = request.args.get('code')
     print 'userCode: '+str(userCode)
     if userCode != None: #got redirect from twitch
@@ -120,6 +128,8 @@ def login():#TODO: add some try/catches around file stuff and curl stuff
 
                 try:
                     session['username'] = username
+                    userObject = User.query.filter_by(username=username).first()
+                    botProcess = userObject.pid
                 except Exception as e:
                     print 'Error: '+str(e)
                     return redirect('/error/')
@@ -142,9 +152,11 @@ def startbot():
 
     if 'username' in session:
         username = session['username']
-        if botProcess == None:
+        if botProcess == 0:
             print 'STARTING BOT'
             botProcess = subprocess.Popen('python bot.py '+username, shell=True, preexec_fn=os.setsid).pid
+            userObject = User.query.filter_by(username=username)
+            userObject.setPid(botProcess)
     return redirect('/dashboard/')
 
 #StopBotPage
@@ -153,14 +165,14 @@ def stopbot():
     global botProcess
 
     if 'username' in session:
-        if botProcess != None:
-            try:
-                print 'STOPPING BOT'
-                #botProcess.kill()
-                os.killpg(botProcess, signal.SIGTERM)
-                botProcess = None
-            except Exception as e:
-                return 'Error: '+str(e)
+        username = session['username']
+        if botProcess != 0:
+            failsafe = 0
+            while killProcess(botProcess) == -1 and failsafe < 50 :
+                failsafe += 1
+            botProcess = 0
+            userObject = User.query.filter_by(username=username)
+            userObject.setPid(botProcess)
     return redirect('/dashboard/')
 
 #DashboardPage
@@ -171,25 +183,20 @@ def profile():#TODO: Have a db(?) place for bot running, so don't have to be in 
         #TODO: Add in database stuff
     if 'username' in session:
         username = session['username']
-        #check request to start bot
-        #result = 'Hello, ' + username + '<br> <a href="/edit/">Edit</a><br> Add new command: <br><form action="/add/"> Command: <input type="text" name="command"><br>Response:<input type="text" name="response"><br><input type="submit" value="Submit"></form>'
         action = ''
         value = ''
         text = ''
         status = ''
-        if botProcess == None: #TODO: Do a checkup on bot status (maybe later w/ javascript?)
-            #button = 'Bot status: Stopped<br><form action="/start/"> <button type="submit" name="bot" value="start">Start bot</button></form>'
+        if botProcess == None: #TODO: Do a checkup on bot status (maybe later w/ javascript?); Do some checking of User.pid
             status = 'Stopped'
             action = '/start/'
             value = "start"
             text = "Start bot"
         else:
-            #button = 'Bot status: Started<br><form action="/stop/"> <button type="submit" name="bot" value="stop">Stop bot</button></form>'
             status = 'Running'
             action = '/stop/'
             value = "stop"
             text = "Stop bot"
-        #return result+'<br><a href="/logout/">Logout</a>'
         return render_template('dashboard.html', username=username, action=action, value=value, text=text, status=status)
 
     else: #no username in session
