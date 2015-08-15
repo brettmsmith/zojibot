@@ -13,11 +13,11 @@ userToken = None
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ["DATABASE_URL"]#'postgresql://localhost/test.db'
 db = SQLAlchemy(app)
-botProcess = None
+botProcess = 0
 redirect_uri = 'http://zojibot.herokuapp.com/login'
 
 
-class User(db.Model):#TODO: Add pid for double-checking process killing
+class User(db.Model):
     id = db.Column(db.Integer, unique = True)
     username = db.Column(db.String(80), primary_key = True)
     #commandSet = db.Column(db.String(5000), unique = False)
@@ -42,14 +42,14 @@ class Command(db.Model):
     response = db.Column(db.String(1000), unique=False)
     userLevel = db.Column(db.Integer)
 
-    def __init__(self, username, comm, response, userLevel=0):
+    def __init__(self, username, comm, response, userlevel=0):
         self.username = username
         self.comm = comm
         self.response = response
-        self.userLevel = userLevel
+        self.userLevel = userlevel
 
     def __repr__(self):
-        return 'Username: %s Command: %s Response: %s Command ID: %s' % (self.username, self.comm, self.response, self.id)
+        return 'Username: %s Command: %s Response: %s User level command: %s' % (self.username, self.comm, self.response, self.userLevel)
 
 def parseCurlForUsername(f):#strip the username out of the json response
     match = re.search("\"user_name\":\s*\"(\w+)\"", f)
@@ -204,9 +204,9 @@ def profile():#TODO: Have a db(?) place for bot running, so don't have to be in 
 
 
 #AddCommandPage
-@app.route('/add/') #TODO: Add in duplicate check
+@app.route('/add/')
 def addCommand():
-
+    global botProcess
     if 'username' in session:
         username = session['username']
         command = request.args.get('command')
@@ -217,9 +217,14 @@ def addCommand():
                 duplicate = Command.query.filter_by(username=username, comm=command).first()
                 print 'Checking...duplicate: '+str(duplicate)
                 if duplicate == None:
-                    newCommand = Command(username, command, response)
+                    newCommand = Command(username, command, response)#TODO: Add in mod only command capabilities/checkbox
                     db.session.add(newCommand)
                     db.session.commit()
+                    if botProcess != 0:
+                        while killProcess(botProcess) == -1:
+                            pass
+                        botProcess = 0
+                        return redirect('/start/')
             return redirect('/dashboard/')
         except Exception as e:
             return 'Error: '+ str(e)

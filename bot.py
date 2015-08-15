@@ -58,10 +58,7 @@ def loadUserCommands(f):#get user's config file and load their commands checking
                 commands.update({row['comm']:row['response']})
     except Exception as e:
         print 'Error loading commands: '+str(e)
-        print 'Trying other stuff'
-        res = db.execute("select comm, response, username, userLevel from Command where comm='!hola';")
-        for r in res:
-            print '>Row: '+r['username']+', '+r['comm']+', '+r['response']
+              
 
 def checkSpam(line, name):#TODO: t/o links, more
     pass
