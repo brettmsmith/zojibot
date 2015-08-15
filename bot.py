@@ -51,7 +51,7 @@ def loadUserCommands(f):#get user's config file and load their commands checking
         print '>Username is '+f
         result = db.execute("select comm, response, userlevel from Command where username='"+f+"';")
         for row in result:
-            print 'Got call: '+row['comm']+' and response: '+row['response']+' and level: '+row['userlevel']
+            print 'Got call: '+row['comm']+' and response: '+row['response']+' and level: '+str(row['userlevel'])
             if row['userlevel'] == 1:
                 modCommands.update({row['comm']:row['response']})
             else:
