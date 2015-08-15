@@ -156,7 +156,7 @@ def startbot():
             print 'STARTING BOT'
             try:
                 botProcess = subprocess.Popen('python bot.py '+username, shell=True, preexec_fn=os.setsid).pid
-                userObject = User.query.filter_by(username=username)
+                userObject = User.query.filter_by(username=username).first()
                 userObject.setPid(botProcess)
             except Exception as e:
                 print 'Error starting bot: '+str(e)
