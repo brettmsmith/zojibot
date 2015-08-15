@@ -17,11 +17,12 @@ botProcess = None
 redirect_uri = 'http://zojibot.herokuapp.com/login'
 
 
-class User(db.Model):
+class User(db.Model):#TODO: Add pid for double-checking process killing
     id = db.Column(db.Integer, unique = True)
     username = db.Column(db.String(80), primary_key = True)
     #commandSet = db.Column(db.String(5000), unique = False)
     commandSet = db.relationship('Command', backref='commands')
+    pid = db.Column(db.Integer)
 
 
     def __init__(self, username):
@@ -36,6 +37,8 @@ class Command(db.Model):
     username = db.Column(db.String(80), db.ForeignKey('user.username'))
     comm = db.Column(db.String(1000), unique=False)
     response = db.Column(db.String(1000), unique=False)
+    userLevel = db.Column(db.Integer)
+
 
     def editCommand(self, newResponse):
         self.response = newResponse

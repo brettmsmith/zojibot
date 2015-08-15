@@ -31,28 +31,35 @@ global username
 username = ':(\w+)!'
 global said
 said = "PRIVMSG\s#.+:(.+)"
+global userlevel
+userlevel = ';user-type=(\w+)\s:'
 
 global s
 
-global commands
+global commands, modCommands
 commands = {}
+modCommands = {}
 
 def loadUserCommands(f):#get user's config file and load their commands checking chat
-    global commands, db
+    global commands, modCommands, db
     commands = {}
+    modCommands = {}
     #rawCommands = Command.query.filter_by(username=f)
     #commandRE = 'Command:\s(.+)\sResponse:'
     #responseRE = 'Response:\s(.+)\sCommand\sID'
     try:
         print '>Username is '+f
-        result = db.execute("select comm, response from Command where username='"+f+"';")
+        result = db.execute("select comm, response, userLevel from Command where username='"+f+"';")
         for row in result:
-            print 'Got call: '+row['comm']+' and response: '+row['response']
-            commands.update({row['comm']:row['response']})
+            print 'Got call: '+row['comm']+' and response: '+row['response']+' and level: '+row['userLevel']
+            if row['userLevel'] == 1:
+                modCommands.update({row['comm']:row['response']})
+            else:
+                commands.update({row['comm']:row['response']})
     except Exception as e:
         print 'Error loading commands: '+str(e)
         print 'Trying other stuff'
-        res = db.execute("select comm, response, username from Command where comm='!hola';")
+        res = db.execute("select comm, response, username, userLevel from Command where comm='!hola';")
         for r in res:
             print '>Row: '+r['username']+', '+r['comm']+', '+r['response']
 
@@ -62,27 +69,28 @@ def checkSpam(line, name):#TODO: t/o links, more
 def checkSubs():
     pass
 
-def checkCommands(readline):#TODO: mod only commands and command cooldowns; changing commands here doesn't change commands in app db;
-    global commands, db
+def checkCommands(readline, userLevel=0):#TODO: mod only commands and command cooldowns; 
+    global commands, modCommands, db
 
-    #2 ways to do it, either check whole msg, or have the command be the only thing allowed
-    #going to do only thing allowed, much much faster
     print type(readline) is str
     if readline in commands:
         sendMessage(commands[readline])
+    elif readline in modCommands and userLevel == 1:
+        sendMessage(modCommands[readline])
     else:
-        (first, sep, after) = readline.partition(' ')
-        print 'First: '+first+" ; After: "+after
-        if first == '!edit':
-            (c, sep, n) = after.partition(' ')
-            print 'Editing command in the database: '+c+' to '+n
-            print 'Calling editCommand on '+n
-            try:
-                db.execute("update Command set response='"+n+"' where username='"+CHANNEL+"' and comm='"+c+"';")#TODO: SQL sanitation
-                sendMessage('Updated '+c+' to '+n)
-            except Exception as e:
-                print 'Error editing command: '+str(e)
-            loadUserCommands(CHANNEL)
+        if userLevel == 1:
+            (first, sep, after) = readline.partition(' ')
+            print 'First: '+first+" ; After: "+after
+            if first == '!edit':
+                (c, sep, n) = after.partition(' ')
+                print 'Editing command in the database: '+c+' to '+n
+                print 'Calling editCommand on '+n
+                try:
+                    db.execute("update Command set response='"+n+"' where username='"+CHANNEL+"' and comm='"+c+"';")#TODO: SQL sanitation
+                    sendMessage('Updated '+c+' to '+n)
+                except Exception as e:
+                    print 'Error editing command: '+str(e)
+                loadUserCommands(CHANNEL)
 
 def connect():
     global s, readbuffer, timecount
@@ -119,7 +127,7 @@ def sendMessage(m):
     #s.send('HELPOP USERCMDS\r\n')
 
 def run():
-    global readbuffer, username, said, s, timecount
+    global readbuffer, username, said, s, timecount, userlevel
     while True:
         try:
             readbuffer = readbuffer + s.recv(4096)
@@ -137,7 +145,7 @@ def run():
         #print temp
         readbuffer = last
 
-        for line in temp: #TODO: make it so everyone can do commands; then maybe mod/caster only; then commands on cooldowns;
+        for line in temp: #TODO: then maybe mod/caster only; then commands on cooldowns;
             reg = re.search(username, line)
             #print 'original match ' + line
             if reg != None:
@@ -146,9 +154,18 @@ def run():
                 regchat = re.search(said, line)
                 if regchat != None:
                     chatLine = regchat.group(1)
-                    checkCommands(chatLine.rstrip())
-                    spam = checkSpam(chatLine, name)
-                    print name + ': ' + chatLine
+                    level = re.search(userlevel, line)
+                    if level != None:
+                        if level == 'mod' or name == CHANNEL:
+                            print 'Checking mod\'s command'
+                            checkCommands(chatLine.rstrip(), 1)
+                        else:
+                            print 'Checking normal user\s command'
+                            checkCommands(chatLine.rstrip())
+                        spam = checkSpam(chatLine, name)
+                        print name + ': ' + chatLine
+                    else:
+                        checkCommands(chatLine.rstrip())
                 else:#TODO: Catch sub messages, have whatever message in response
                     #subResponse = checkSubs(line)
                     pass
