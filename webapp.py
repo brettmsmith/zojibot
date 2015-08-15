@@ -253,7 +253,7 @@ def logout():
 #if __name__ == '__main__':
 def run():
     #app.debug = True
-    #db.drop_all()
+    db.drop_all()
     #db.create_all()
     app.secret_key = SECRET_KEY
     #app.run()
