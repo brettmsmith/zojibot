@@ -40,16 +40,16 @@ class Command(db.Model):
     username = db.Column(db.String(80), db.ForeignKey('user.username'))
     comm = db.Column(db.String(1000), unique=False)
     response = db.Column(db.String(1000), unique=False)
-    userLevel = db.Column(db.Integer)
+    userlevel = db.Column(db.Integer)
 
-    def __init__(self, username, comm, response, userlevel=0):
+    def __init__(self, username, comm, response, userLevel=0):
         self.username = username
         self.comm = comm
         self.response = response
-        self.userLevel = userlevel
+        self.userlevel = userLevel
 
     def __repr__(self):
-        return 'Username: %s Command: %s Response: %s User level command: %s' % (self.username, self.comm, self.response, self.userLevel)
+        return 'Username: %s Command: %s Response: %s User level command: %s' % (self.username, self.comm, self.response, self.userlevel)
 
 def parseCurlForUsername(f):#strip the username out of the json response
     match = re.search("\"user_name\":\s*\"(\w+)\"", f)
