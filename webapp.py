@@ -187,7 +187,7 @@ def profile():#TODO: Have a db(?) place for bot running, so don't have to be in 
         value = ''
         text = ''
         status = ''
-        if botProcess == None: #TODO: Do a checkup on bot status (maybe later w/ javascript?); Do some checking of User.pid
+        if botProcess == 0: #TODO: Do a checkup on bot status (maybe later w/ javascript?); Do some checking of User.pid
             status = 'Stopped'
             action = '/start/'
             value = "start"
