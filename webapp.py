@@ -163,13 +163,14 @@ def startbot():
     return redirect('/dashboard/')
 
 #StopBotPage
-@app.route('/stop/')
+@app.route('/stop/')#TODO: bot keeps starting and stopping
 def stopbot():
     global botProcess
 
     if 'username' in session:
         username = session['username']
         if botProcess != 0:
+            print 'STOPPING BOT'
             failsafe = 0
             while killProcess(botProcess) == -1 and failsafe < 50 :
                 failsafe += 1
